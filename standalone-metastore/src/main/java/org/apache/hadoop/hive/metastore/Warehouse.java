@@ -67,6 +67,7 @@ public class Warehouse {
   public static final String DEFAULT_SERIALIZATION_FORMAT = "1";
   public static final String DATABASE_WAREHOUSE_SUFFIX = ".db";
   private static final String CAT_DB_TABLE_SEPARATOR = ".";
+  public static final String SPARK_CATALOG = "spark";
 
   private Path whRoot;
   private Path whRootExternal;
