@@ -1267,7 +1267,8 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       try {
         firePreEvent(new PreCreateDatabaseEvent(db, this));
 
-        if (db.getCatalogName().equals(Warehouse.SPARK_CATALOG)) {
+        if (db.getCatalogName() != null && !db.getCatalogName().
+            equals(Warehouse.DEFAULT_CATALOG_NAME)) {
           if (!wh.isDir(dbPath)) {
             LOG.debug("Creating database path " + dbPath);
             if (!wh.mkdirs(dbPath)) {
@@ -1343,7 +1344,8 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         if (!success) {
           ms.rollbackTransaction();
 
-          if (db.getCatalogName().equals(Warehouse.SPARK_CATALOG)) {
+          if (db.getCatalogName() != null && !db.getCatalogName().
+              equals(Warehouse.DEFAULT_CATALOG_NAME)) {
             if (madeManagedDir) {
               wh.deleteDir(dbPath, true, db);
             }
@@ -1676,7 +1678,8 @@ public class HiveMetaStore extends ThriftHiveMetastore {
           }
           // Delete the data in the database
 
-          if (db.getCatalogName().equals(Warehouse.SPARK_CATALOG)) {
+          if (db.getCatalogName() != null && !db.getCatalogName().
+              equals(Warehouse.DEFAULT_CATALOG_NAME)) {
             try {
               wh.deleteDir(new Path(db.getLocationUri()), true, db);
             } catch (Exception e) {

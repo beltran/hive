@@ -140,7 +140,8 @@ public class StorageBasedAuthorizationProvider extends HiveAuthorizationProvider
       throws HiveException, AuthorizationException {
     Path path;
 
-    if (db.getCatalogName().equals(Warehouse.SPARK_CATALOG)) {
+    if (db.getCatalogName() != null && !db.getCatalogName().
+        equals(Warehouse.DEFAULT_CATALOG_NAME)) {
       path = getDbLocation(db);
     } else {
       path = wh.determineDatabaseExternalPath(db);
