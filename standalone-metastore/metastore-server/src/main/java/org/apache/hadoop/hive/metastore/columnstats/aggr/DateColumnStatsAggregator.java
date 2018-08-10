@@ -63,7 +63,7 @@ public class DateColumnStatsAggregator extends ColumnStatsAggregator implements
         LOG.trace("doAllPartitionContainStats for column: {} is: {}", colName, doAllPartitionContainStats);
       }
       DateColumnStatsDataInspector dateColumnStats =
-          new DateColumnStatsDataInspector(cso.getStatsData().getDateStats());
+          (DateColumnStatsDataInspector) cso.getStatsData().getDateStats();
       if (dateColumnStats.getNdvEstimator() == null) {
         ndvEstimator = null;
         break;
@@ -100,9 +100,8 @@ public class DateColumnStatsAggregator extends ColumnStatsAggregator implements
         higherBound += newData.getNumDVs();
         densityAvgSum += (diff(newData.getHighValue(), newData.getLowValue()))
             / newData.getNumDVs();
-        if (ndvEstimator != null) {
-          if (newData instanceof DateColumnStatsDataInspector )
-            ndvEstimator.mergeEstimators(((DateColumnStatsDataInspector)newData).getNdvEstimator());
+        if ((ndvEstimator != null) && (newData instanceof DateColumnStatsDataInspector)) {
+          ndvEstimator.mergeEstimators(((DateColumnStatsDataInspector)newData).getNdvEstimator());
         }
         if (aggregateData == null) {
           aggregateData = newData.deepCopy();
@@ -175,7 +174,7 @@ public class DateColumnStatsAggregator extends ColumnStatsAggregator implements
           ColumnStatisticsObj cso = csp.getColStatsObj();
           String partName = csp.getPartName();
           DateColumnStatsDataInspector newData =
-              new DateColumnStatsDataInspector(cso.getStatsData().getDateStats());
+              (DateColumnStatsDataInspector) cso.getStatsData().getDateStats();
           // newData.isSetBitVectors() should be true for sure because we
           // already checked it before.
           if (indexMap.get(partName) != curIndex) {
