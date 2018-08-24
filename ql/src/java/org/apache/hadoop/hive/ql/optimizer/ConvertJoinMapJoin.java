@@ -48,6 +48,7 @@ import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
 import org.apache.hadoop.hive.ql.exec.SelectOperator;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.exec.TezDummyStoreOperator;
+import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.lib.Node;
 import org.apache.hadoop.hive.ql.lib.NodeProcessor;
 import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
@@ -727,7 +728,15 @@ public class ConvertJoinMapJoin implements NodeProcessor {
     List<List<String>> grandParentColNames = parentOfParent.getOpTraits().getBucketColNames();
     int numBuckets = parentOfParent.getOpTraits().getNumBuckets();
     // all keys matched.
-    if (!checkColEquality(grandParentColNames, parentColNames, rs.getColumnExprMap(), true)) {
+
+    Map<String, ExprNodeDesc> reduceKeys = new HashMap<String, ExprNodeDesc>();
+    for (Map.Entry<String, ExprNodeDesc> entry : rs.getColumnExprMap().entrySet()) {
+      if (entry.getKey().startsWith(Utilities.ReduceField.KEY.toString())) {
+        reduceKeys.put(entry.getKey(), entry.getValue());
+      }
+    }
+
+    if (!checkColEquality(grandParentColNames, parentColNames, reduceKeys, true)) {
       LOG.info("No info available to check for bucket map join. Cannot convert");
       return false;
     }
