@@ -1088,6 +1088,38 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         LOG.debug("Going to execute update <" + s + ">");
         stmt.executeUpdate(s);
 
+        // update the key/value associated with the transaction if it has been
+        // set
+        if (rqst.isSetKey() && rqst.isSetValue()) {
+          if (!rqst.isSetCatalog() || !rqst.isSetDatabase() || !rqst.isSetTable()) {
+            throw new SQLException("If key/value are set, the database and"
+                + " table must be as well");
+          }
+          s = "SELECT TBL_ID FROM DBS, TBLS WHERE"
+              + " NAME = " + quoteString(rqst.getDatabase())
+              + " AND CTLG_NAME = " + quoteString(rqst.getCatalog())
+              + " AND DBS.DB_ID = TBLS.DB_ID"
+              + " AND TBL_NAME = " + quoteString(rqst.getTable());
+          LOG.debug("Going to execute select <" + s + ">");
+          ResultSet rsTbls = stmt.executeQuery(s);
+          rsTbls.next();
+          long tblId = rsTbls.getLong(1);
+          if (rsTbls.next()) {
+            throw new SQLException("Expecting the given parameters"
+                + " to determine uniquely the table id");
+          }
+          s = "UPDATE TABLE_PARAMS SET"
+              + " PARAM_VALUE = " + quoteString(rqst.getValue())
+              + " WHERE TBL_ID = " + tblId
+              + " AND PARAM_KEY = " + quoteString(rqst.getKey());
+          LOG.debug("Going to execute update <" + s + ">");
+          int affectedRows = stmt.executeUpdate(s);
+          if (affectedRows != 1) {
+            throw new SQLException("Error updating the key/value in the sql"
+                + " backend. One row should have been affected");
+          }
+        }
+
         if (transactionalListeners != null) {
           MetaStoreListenerNotifier.notifyEventWithDirectSql(transactionalListeners,
                   EventMessage.EventType.COMMIT_TXN, new CommitTxnEvent(txnid, null), dbConn, sqlGenerator);

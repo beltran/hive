@@ -901,6 +901,14 @@ struct CommitTxnRequest {
     2: optional string replPolicy,
     // Information related to write operations done in this transaction.
     3: optional list<WriteEventInfo> writeEventInfos,
+
+    // An optional key/value to store atomically with the transaction
+    // If the key and value are set, the catalog, database and table must be set as well
+    4: optional string catalog,
+    5: optional string database,
+    6: optional string table,
+    7: optional string key,
+    8: optional string value,
 }
 
 struct WriteEventInfo {

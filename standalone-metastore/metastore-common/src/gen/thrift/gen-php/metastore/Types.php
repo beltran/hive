@@ -17248,6 +17248,26 @@ class CommitTxnRequest {
    * @var \metastore\WriteEventInfo[]
    */
   public $writeEventInfos = null;
+  /**
+   * @var string
+   */
+  public $catalog = null;
+  /**
+   * @var string
+   */
+  public $database = null;
+  /**
+   * @var string
+   */
+  public $table = null;
+  /**
+   * @var string
+   */
+  public $key = null;
+  /**
+   * @var string
+   */
+  public $value = null;
 
   public function __construct($vals=null) {
     if (!isset(self::$_TSPEC)) {
@@ -17269,6 +17289,26 @@ class CommitTxnRequest {
             'class' => '\metastore\WriteEventInfo',
             ),
           ),
+        4 => array(
+          'var' => 'catalog',
+          'type' => TType::STRING,
+          ),
+        5 => array(
+          'var' => 'database',
+          'type' => TType::STRING,
+          ),
+        6 => array(
+          'var' => 'table',
+          'type' => TType::STRING,
+          ),
+        7 => array(
+          'var' => 'key',
+          'type' => TType::STRING,
+          ),
+        8 => array(
+          'var' => 'value',
+          'type' => TType::STRING,
+          ),
         );
     }
     if (is_array($vals)) {
@@ -17280,6 +17320,21 @@ class CommitTxnRequest {
       }
       if (isset($vals['writeEventInfos'])) {
         $this->writeEventInfos = $vals['writeEventInfos'];
+      }
+      if (isset($vals['catalog'])) {
+        $this->catalog = $vals['catalog'];
+      }
+      if (isset($vals['database'])) {
+        $this->database = $vals['database'];
+      }
+      if (isset($vals['table'])) {
+        $this->table = $vals['table'];
+      }
+      if (isset($vals['key'])) {
+        $this->key = $vals['key'];
+      }
+      if (isset($vals['value'])) {
+        $this->value = $vals['value'];
       }
     }
   }
@@ -17335,6 +17390,41 @@ class CommitTxnRequest {
             $xfer += $input->skip($ftype);
           }
           break;
+        case 4:
+          if ($ftype == TType::STRING) {
+            $xfer += $input->readString($this->catalog);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        case 5:
+          if ($ftype == TType::STRING) {
+            $xfer += $input->readString($this->database);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        case 6:
+          if ($ftype == TType::STRING) {
+            $xfer += $input->readString($this->table);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        case 7:
+          if ($ftype == TType::STRING) {
+            $xfer += $input->readString($this->key);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        case 8:
+          if ($ftype == TType::STRING) {
+            $xfer += $input->readString($this->value);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
         default:
           $xfer += $input->skip($ftype);
           break;
@@ -17373,6 +17463,31 @@ class CommitTxnRequest {
         }
         $output->writeListEnd();
       }
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->catalog !== null) {
+      $xfer += $output->writeFieldBegin('catalog', TType::STRING, 4);
+      $xfer += $output->writeString($this->catalog);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->database !== null) {
+      $xfer += $output->writeFieldBegin('database', TType::STRING, 5);
+      $xfer += $output->writeString($this->database);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->table !== null) {
+      $xfer += $output->writeFieldBegin('table', TType::STRING, 6);
+      $xfer += $output->writeString($this->table);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->key !== null) {
+      $xfer += $output->writeFieldBegin('key', TType::STRING, 7);
+      $xfer += $output->writeString($this->key);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->value !== null) {
+      $xfer += $output->writeFieldBegin('value', TType::STRING, 8);
+      $xfer += $output->writeString($this->value);
       $xfer += $output->writeFieldEnd();
     }
     $xfer += $output->writeFieldStop();

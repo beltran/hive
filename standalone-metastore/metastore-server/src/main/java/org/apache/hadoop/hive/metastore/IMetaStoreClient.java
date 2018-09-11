@@ -2926,6 +2926,28 @@ public interface IMetaStoreClient {
       throws NoSuchTxnException, TxnAbortedException, TException;
 
   /**
+   * Like commitTxn but it will atomically store as well a key and a value. This
+   * can be useful for example to know if a transaction already been committed.
+   * TABLE_PARAMS from the metastore must already have a row with the TBL_ID
+   * corresponding to the table in the parameters and PARAM_KEY the same as
+   * key in the parameters.
+   * @param txnid id of transaction to be committed.
+   * @param database database of the table the key/value will be associated with
+   * @param table table the key/value will be associated with.
+   * @param key key to be committed.
+   * @param value value to be committed.
+   * @throws NoSuchTxnException if the requested transaction does not exist.
+   * This can result fro the transaction having timed out and been deleted by
+   * the compactor.
+   * @throws TxnAbortedException if the requested transaction has been
+   * aborted.  This can result from the transaction timing out.
+   * @throws TException
+   */
+  void commitTxnWithKeyValue(long txnid, String catalog, String database,
+      String table, String key, String value) throws NoSuchTxnException,
+      TxnAbortedException, TException;
+
+  /**
    * Commit a transaction.  This will also unlock any locks associated with
    * this transaction.
    * @param rqst Information containing the txn info and write event information

@@ -12013,6 +12013,11 @@ class CommitTxnRequest:
    - txnid
    - replPolicy
    - writeEventInfos
+   - catalog
+   - database
+   - table
+   - key
+   - value
   """
 
   thrift_spec = (
@@ -12020,12 +12025,22 @@ class CommitTxnRequest:
     (1, TType.I64, 'txnid', None, None, ), # 1
     (2, TType.STRING, 'replPolicy', None, None, ), # 2
     (3, TType.LIST, 'writeEventInfos', (TType.STRUCT,(WriteEventInfo, WriteEventInfo.thrift_spec)), None, ), # 3
+    (4, TType.STRING, 'catalog', None, None, ), # 4
+    (5, TType.STRING, 'database', None, None, ), # 5
+    (6, TType.STRING, 'table', None, None, ), # 6
+    (7, TType.STRING, 'key', None, None, ), # 7
+    (8, TType.STRING, 'value', None, None, ), # 8
   )
 
-  def __init__(self, txnid=None, replPolicy=None, writeEventInfos=None,):
+  def __init__(self, txnid=None, replPolicy=None, writeEventInfos=None, catalog=None, database=None, table=None, key=None, value=None,):
     self.txnid = txnid
     self.replPolicy = replPolicy
     self.writeEventInfos = writeEventInfos
+    self.catalog = catalog
+    self.database = database
+    self.table = table
+    self.key = key
+    self.value = value
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -12057,6 +12072,31 @@ class CommitTxnRequest:
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
+      elif fid == 4:
+        if ftype == TType.STRING:
+          self.catalog = iprot.readString()
+        else:
+          iprot.skip(ftype)
+      elif fid == 5:
+        if ftype == TType.STRING:
+          self.database = iprot.readString()
+        else:
+          iprot.skip(ftype)
+      elif fid == 6:
+        if ftype == TType.STRING:
+          self.table = iprot.readString()
+        else:
+          iprot.skip(ftype)
+      elif fid == 7:
+        if ftype == TType.STRING:
+          self.key = iprot.readString()
+        else:
+          iprot.skip(ftype)
+      elif fid == 8:
+        if ftype == TType.STRING:
+          self.value = iprot.readString()
+        else:
+          iprot.skip(ftype)
       else:
         iprot.skip(ftype)
       iprot.readFieldEnd()
@@ -12082,6 +12122,26 @@ class CommitTxnRequest:
         iter536.write(oprot)
       oprot.writeListEnd()
       oprot.writeFieldEnd()
+    if self.catalog is not None:
+      oprot.writeFieldBegin('catalog', TType.STRING, 4)
+      oprot.writeString(self.catalog)
+      oprot.writeFieldEnd()
+    if self.database is not None:
+      oprot.writeFieldBegin('database', TType.STRING, 5)
+      oprot.writeString(self.database)
+      oprot.writeFieldEnd()
+    if self.table is not None:
+      oprot.writeFieldBegin('table', TType.STRING, 6)
+      oprot.writeString(self.table)
+      oprot.writeFieldEnd()
+    if self.key is not None:
+      oprot.writeFieldBegin('key', TType.STRING, 7)
+      oprot.writeString(self.key)
+      oprot.writeFieldEnd()
+    if self.value is not None:
+      oprot.writeFieldBegin('value', TType.STRING, 8)
+      oprot.writeString(self.value)
+      oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()
 
@@ -12096,6 +12156,11 @@ class CommitTxnRequest:
     value = (value * 31) ^ hash(self.txnid)
     value = (value * 31) ^ hash(self.replPolicy)
     value = (value * 31) ^ hash(self.writeEventInfos)
+    value = (value * 31) ^ hash(self.catalog)
+    value = (value * 31) ^ hash(self.database)
+    value = (value * 31) ^ hash(self.table)
+    value = (value * 31) ^ hash(self.key)
+    value = (value * 31) ^ hash(self.value)
     return value
 
   def __repr__(self):

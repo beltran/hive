@@ -2673,11 +2673,21 @@ class CommitTxnRequest
   TXNID = 1
   REPLPOLICY = 2
   WRITEEVENTINFOS = 3
+  CATALOG = 4
+  DATABASE = 5
+  TABLE = 6
+  KEY = 7
+  VALUE = 8
 
   FIELDS = {
     TXNID => {:type => ::Thrift::Types::I64, :name => 'txnid'},
     REPLPOLICY => {:type => ::Thrift::Types::STRING, :name => 'replPolicy', :optional => true},
-    WRITEEVENTINFOS => {:type => ::Thrift::Types::LIST, :name => 'writeEventInfos', :element => {:type => ::Thrift::Types::STRUCT, :class => ::WriteEventInfo}, :optional => true}
+    WRITEEVENTINFOS => {:type => ::Thrift::Types::LIST, :name => 'writeEventInfos', :element => {:type => ::Thrift::Types::STRUCT, :class => ::WriteEventInfo}, :optional => true},
+    CATALOG => {:type => ::Thrift::Types::STRING, :name => 'catalog', :optional => true},
+    DATABASE => {:type => ::Thrift::Types::STRING, :name => 'database', :optional => true},
+    TABLE => {:type => ::Thrift::Types::STRING, :name => 'table', :optional => true},
+    KEY => {:type => ::Thrift::Types::STRING, :name => 'key', :optional => true},
+    VALUE => {:type => ::Thrift::Types::STRING, :name => 'value', :optional => true}
   }
 
   def struct_fields; FIELDS; end

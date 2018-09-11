@@ -41,6 +41,11 @@ import org.slf4j.LoggerFactory;
   private static final org.apache.thrift.protocol.TField TXNID_FIELD_DESC = new org.apache.thrift.protocol.TField("txnid", org.apache.thrift.protocol.TType.I64, (short)1);
   private static final org.apache.thrift.protocol.TField REPL_POLICY_FIELD_DESC = new org.apache.thrift.protocol.TField("replPolicy", org.apache.thrift.protocol.TType.STRING, (short)2);
   private static final org.apache.thrift.protocol.TField WRITE_EVENT_INFOS_FIELD_DESC = new org.apache.thrift.protocol.TField("writeEventInfos", org.apache.thrift.protocol.TType.LIST, (short)3);
+  private static final org.apache.thrift.protocol.TField CATALOG_FIELD_DESC = new org.apache.thrift.protocol.TField("catalog", org.apache.thrift.protocol.TType.STRING, (short)4);
+  private static final org.apache.thrift.protocol.TField DATABASE_FIELD_DESC = new org.apache.thrift.protocol.TField("database", org.apache.thrift.protocol.TType.STRING, (short)5);
+  private static final org.apache.thrift.protocol.TField TABLE_FIELD_DESC = new org.apache.thrift.protocol.TField("table", org.apache.thrift.protocol.TType.STRING, (short)6);
+  private static final org.apache.thrift.protocol.TField KEY_FIELD_DESC = new org.apache.thrift.protocol.TField("key", org.apache.thrift.protocol.TType.STRING, (short)7);
+  private static final org.apache.thrift.protocol.TField VALUE_FIELD_DESC = new org.apache.thrift.protocol.TField("value", org.apache.thrift.protocol.TType.STRING, (short)8);
 
   private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
   static {
@@ -51,12 +56,22 @@ import org.slf4j.LoggerFactory;
   private long txnid; // required
   private String replPolicy; // optional
   private List<WriteEventInfo> writeEventInfos; // optional
+  private String catalog; // optional
+  private String database; // optional
+  private String table; // optional
+  private String key; // optional
+  private String value; // optional
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
     TXNID((short)1, "txnid"),
     REPL_POLICY((short)2, "replPolicy"),
-    WRITE_EVENT_INFOS((short)3, "writeEventInfos");
+    WRITE_EVENT_INFOS((short)3, "writeEventInfos"),
+    CATALOG((short)4, "catalog"),
+    DATABASE((short)5, "database"),
+    TABLE((short)6, "table"),
+    KEY((short)7, "key"),
+    VALUE((short)8, "value");
 
     private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -77,6 +92,16 @@ import org.slf4j.LoggerFactory;
           return REPL_POLICY;
         case 3: // WRITE_EVENT_INFOS
           return WRITE_EVENT_INFOS;
+        case 4: // CATALOG
+          return CATALOG;
+        case 5: // DATABASE
+          return DATABASE;
+        case 6: // TABLE
+          return TABLE;
+        case 7: // KEY
+          return KEY;
+        case 8: // VALUE
+          return VALUE;
         default:
           return null;
       }
@@ -119,7 +144,7 @@ import org.slf4j.LoggerFactory;
   // isset id assignments
   private static final int __TXNID_ISSET_ID = 0;
   private byte __isset_bitfield = 0;
-  private static final _Fields optionals[] = {_Fields.REPL_POLICY,_Fields.WRITE_EVENT_INFOS};
+  private static final _Fields optionals[] = {_Fields.REPL_POLICY,_Fields.WRITE_EVENT_INFOS,_Fields.CATALOG,_Fields.DATABASE,_Fields.TABLE,_Fields.KEY,_Fields.VALUE};
   public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
     Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
@@ -130,6 +155,16 @@ import org.slf4j.LoggerFactory;
     tmpMap.put(_Fields.WRITE_EVENT_INFOS, new org.apache.thrift.meta_data.FieldMetaData("writeEventInfos", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.ListMetaData(org.apache.thrift.protocol.TType.LIST, 
             new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRUCT            , "WriteEventInfo"))));
+    tmpMap.put(_Fields.CATALOG, new org.apache.thrift.meta_data.FieldMetaData("catalog", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
+    tmpMap.put(_Fields.DATABASE, new org.apache.thrift.meta_data.FieldMetaData("database", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
+    tmpMap.put(_Fields.TABLE, new org.apache.thrift.meta_data.FieldMetaData("table", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
+    tmpMap.put(_Fields.KEY, new org.apache.thrift.meta_data.FieldMetaData("key", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
+    tmpMap.put(_Fields.VALUE, new org.apache.thrift.meta_data.FieldMetaData("value", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
     org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(CommitTxnRequest.class, metaDataMap);
   }
@@ -161,6 +196,21 @@ import org.slf4j.LoggerFactory;
       }
       this.writeEventInfos = __this__writeEventInfos;
     }
+    if (other.isSetCatalog()) {
+      this.catalog = other.catalog;
+    }
+    if (other.isSetDatabase()) {
+      this.database = other.database;
+    }
+    if (other.isSetTable()) {
+      this.table = other.table;
+    }
+    if (other.isSetKey()) {
+      this.key = other.key;
+    }
+    if (other.isSetValue()) {
+      this.value = other.value;
+    }
   }
 
   public CommitTxnRequest deepCopy() {
@@ -173,6 +223,11 @@ import org.slf4j.LoggerFactory;
     this.txnid = 0;
     this.replPolicy = null;
     this.writeEventInfos = null;
+    this.catalog = null;
+    this.database = null;
+    this.table = null;
+    this.key = null;
+    this.value = null;
   }
 
   public long getTxnid() {
@@ -258,6 +313,121 @@ import org.slf4j.LoggerFactory;
     }
   }
 
+  public String getCatalog() {
+    return this.catalog;
+  }
+
+  public void setCatalog(String catalog) {
+    this.catalog = catalog;
+  }
+
+  public void unsetCatalog() {
+    this.catalog = null;
+  }
+
+  /** Returns true if field catalog is set (has been assigned a value) and false otherwise */
+  public boolean isSetCatalog() {
+    return this.catalog != null;
+  }
+
+  public void setCatalogIsSet(boolean value) {
+    if (!value) {
+      this.catalog = null;
+    }
+  }
+
+  public String getDatabase() {
+    return this.database;
+  }
+
+  public void setDatabase(String database) {
+    this.database = database;
+  }
+
+  public void unsetDatabase() {
+    this.database = null;
+  }
+
+  /** Returns true if field database is set (has been assigned a value) and false otherwise */
+  public boolean isSetDatabase() {
+    return this.database != null;
+  }
+
+  public void setDatabaseIsSet(boolean value) {
+    if (!value) {
+      this.database = null;
+    }
+  }
+
+  public String getTable() {
+    return this.table;
+  }
+
+  public void setTable(String table) {
+    this.table = table;
+  }
+
+  public void unsetTable() {
+    this.table = null;
+  }
+
+  /** Returns true if field table is set (has been assigned a value) and false otherwise */
+  public boolean isSetTable() {
+    return this.table != null;
+  }
+
+  public void setTableIsSet(boolean value) {
+    if (!value) {
+      this.table = null;
+    }
+  }
+
+  public String getKey() {
+    return this.key;
+  }
+
+  public void setKey(String key) {
+    this.key = key;
+  }
+
+  public void unsetKey() {
+    this.key = null;
+  }
+
+  /** Returns true if field key is set (has been assigned a value) and false otherwise */
+  public boolean isSetKey() {
+    return this.key != null;
+  }
+
+  public void setKeyIsSet(boolean value) {
+    if (!value) {
+      this.key = null;
+    }
+  }
+
+  public String getValue() {
+    return this.value;
+  }
+
+  public void setValue(String value) {
+    this.value = value;
+  }
+
+  public void unsetValue() {
+    this.value = null;
+  }
+
+  /** Returns true if field value is set (has been assigned a value) and false otherwise */
+  public boolean isSetValue() {
+    return this.value != null;
+  }
+
+  public void setValueIsSet(boolean value) {
+    if (!value) {
+      this.value = null;
+    }
+  }
+
   public void setFieldValue(_Fields field, Object value) {
     switch (field) {
     case TXNID:
@@ -284,6 +454,46 @@ import org.slf4j.LoggerFactory;
       }
       break;
 
+    case CATALOG:
+      if (value == null) {
+        unsetCatalog();
+      } else {
+        setCatalog((String)value);
+      }
+      break;
+
+    case DATABASE:
+      if (value == null) {
+        unsetDatabase();
+      } else {
+        setDatabase((String)value);
+      }
+      break;
+
+    case TABLE:
+      if (value == null) {
+        unsetTable();
+      } else {
+        setTable((String)value);
+      }
+      break;
+
+    case KEY:
+      if (value == null) {
+        unsetKey();
+      } else {
+        setKey((String)value);
+      }
+      break;
+
+    case VALUE:
+      if (value == null) {
+        unsetValue();
+      } else {
+        setValue((String)value);
+      }
+      break;
+
     }
   }
 
@@ -297,6 +507,21 @@ import org.slf4j.LoggerFactory;
 
     case WRITE_EVENT_INFOS:
       return getWriteEventInfos();
+
+    case CATALOG:
+      return getCatalog();
+
+    case DATABASE:
+      return getDatabase();
+
+    case TABLE:
+      return getTable();
+
+    case KEY:
+      return getKey();
+
+    case VALUE:
+      return getValue();
 
     }
     throw new IllegalStateException();
@@ -315,6 +540,16 @@ import org.slf4j.LoggerFactory;
       return isSetReplPolicy();
     case WRITE_EVENT_INFOS:
       return isSetWriteEventInfos();
+    case CATALOG:
+      return isSetCatalog();
+    case DATABASE:
+      return isSetDatabase();
+    case TABLE:
+      return isSetTable();
+    case KEY:
+      return isSetKey();
+    case VALUE:
+      return isSetValue();
     }
     throw new IllegalStateException();
   }
@@ -359,6 +594,51 @@ import org.slf4j.LoggerFactory;
         return false;
     }
 
+    boolean this_present_catalog = true && this.isSetCatalog();
+    boolean that_present_catalog = true && that.isSetCatalog();
+    if (this_present_catalog || that_present_catalog) {
+      if (!(this_present_catalog && that_present_catalog))
+        return false;
+      if (!this.catalog.equals(that.catalog))
+        return false;
+    }
+
+    boolean this_present_database = true && this.isSetDatabase();
+    boolean that_present_database = true && that.isSetDatabase();
+    if (this_present_database || that_present_database) {
+      if (!(this_present_database && that_present_database))
+        return false;
+      if (!this.database.equals(that.database))
+        return false;
+    }
+
+    boolean this_present_table = true && this.isSetTable();
+    boolean that_present_table = true && that.isSetTable();
+    if (this_present_table || that_present_table) {
+      if (!(this_present_table && that_present_table))
+        return false;
+      if (!this.table.equals(that.table))
+        return false;
+    }
+
+    boolean this_present_key = true && this.isSetKey();
+    boolean that_present_key = true && that.isSetKey();
+    if (this_present_key || that_present_key) {
+      if (!(this_present_key && that_present_key))
+        return false;
+      if (!this.key.equals(that.key))
+        return false;
+    }
+
+    boolean this_present_value = true && this.isSetValue();
+    boolean that_present_value = true && that.isSetValue();
+    if (this_present_value || that_present_value) {
+      if (!(this_present_value && that_present_value))
+        return false;
+      if (!this.value.equals(that.value))
+        return false;
+    }
+
     return true;
   }
 
@@ -380,6 +660,31 @@ import org.slf4j.LoggerFactory;
     list.add(present_writeEventInfos);
     if (present_writeEventInfos)
       list.add(writeEventInfos);
+
+    boolean present_catalog = true && (isSetCatalog());
+    list.add(present_catalog);
+    if (present_catalog)
+      list.add(catalog);
+
+    boolean present_database = true && (isSetDatabase());
+    list.add(present_database);
+    if (present_database)
+      list.add(database);
+
+    boolean present_table = true && (isSetTable());
+    list.add(present_table);
+    if (present_table)
+      list.add(table);
+
+    boolean present_key = true && (isSetKey());
+    list.add(present_key);
+    if (present_key)
+      list.add(key);
+
+    boolean present_value = true && (isSetValue());
+    list.add(present_value);
+    if (present_value)
+      list.add(value);
 
     return list.hashCode();
   }
@@ -418,6 +723,56 @@ import org.slf4j.LoggerFactory;
     }
     if (isSetWriteEventInfos()) {
       lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.writeEventInfos, other.writeEventInfos);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
+    lastComparison = Boolean.valueOf(isSetCatalog()).compareTo(other.isSetCatalog());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetCatalog()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.catalog, other.catalog);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
+    lastComparison = Boolean.valueOf(isSetDatabase()).compareTo(other.isSetDatabase());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetDatabase()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.database, other.database);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
+    lastComparison = Boolean.valueOf(isSetTable()).compareTo(other.isSetTable());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetTable()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.table, other.table);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
+    lastComparison = Boolean.valueOf(isSetKey()).compareTo(other.isSetKey());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetKey()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.key, other.key);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
+    lastComparison = Boolean.valueOf(isSetValue()).compareTo(other.isSetValue());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetValue()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.value, other.value);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -462,6 +817,56 @@ import org.slf4j.LoggerFactory;
         sb.append("null");
       } else {
         sb.append(this.writeEventInfos);
+      }
+      first = false;
+    }
+    if (isSetCatalog()) {
+      if (!first) sb.append(", ");
+      sb.append("catalog:");
+      if (this.catalog == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.catalog);
+      }
+      first = false;
+    }
+    if (isSetDatabase()) {
+      if (!first) sb.append(", ");
+      sb.append("database:");
+      if (this.database == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.database);
+      }
+      first = false;
+    }
+    if (isSetTable()) {
+      if (!first) sb.append(", ");
+      sb.append("table:");
+      if (this.table == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.table);
+      }
+      first = false;
+    }
+    if (isSetKey()) {
+      if (!first) sb.append(", ");
+      sb.append("key:");
+      if (this.key == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.key);
+      }
+      first = false;
+    }
+    if (isSetValue()) {
+      if (!first) sb.append(", ");
+      sb.append("value:");
+      if (this.value == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.value);
       }
       first = false;
     }
@@ -549,6 +954,46 @@ import org.slf4j.LoggerFactory;
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
+          case 4: // CATALOG
+            if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
+              struct.catalog = iprot.readString();
+              struct.setCatalogIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
+          case 5: // DATABASE
+            if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
+              struct.database = iprot.readString();
+              struct.setDatabaseIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
+          case 6: // TABLE
+            if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
+              struct.table = iprot.readString();
+              struct.setTableIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
+          case 7: // KEY
+            if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
+              struct.key = iprot.readString();
+              struct.setKeyIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
+          case 8: // VALUE
+            if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
+              struct.value = iprot.readString();
+              struct.setValueIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
           default:
             org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
         }
@@ -586,6 +1031,41 @@ import org.slf4j.LoggerFactory;
           oprot.writeFieldEnd();
         }
       }
+      if (struct.catalog != null) {
+        if (struct.isSetCatalog()) {
+          oprot.writeFieldBegin(CATALOG_FIELD_DESC);
+          oprot.writeString(struct.catalog);
+          oprot.writeFieldEnd();
+        }
+      }
+      if (struct.database != null) {
+        if (struct.isSetDatabase()) {
+          oprot.writeFieldBegin(DATABASE_FIELD_DESC);
+          oprot.writeString(struct.database);
+          oprot.writeFieldEnd();
+        }
+      }
+      if (struct.table != null) {
+        if (struct.isSetTable()) {
+          oprot.writeFieldBegin(TABLE_FIELD_DESC);
+          oprot.writeString(struct.table);
+          oprot.writeFieldEnd();
+        }
+      }
+      if (struct.key != null) {
+        if (struct.isSetKey()) {
+          oprot.writeFieldBegin(KEY_FIELD_DESC);
+          oprot.writeString(struct.key);
+          oprot.writeFieldEnd();
+        }
+      }
+      if (struct.value != null) {
+        if (struct.isSetValue()) {
+          oprot.writeFieldBegin(VALUE_FIELD_DESC);
+          oprot.writeString(struct.value);
+          oprot.writeFieldEnd();
+        }
+      }
       oprot.writeFieldStop();
       oprot.writeStructEnd();
     }
@@ -611,7 +1091,22 @@ import org.slf4j.LoggerFactory;
       if (struct.isSetWriteEventInfos()) {
         optionals.set(1);
       }
-      oprot.writeBitSet(optionals, 2);
+      if (struct.isSetCatalog()) {
+        optionals.set(2);
+      }
+      if (struct.isSetDatabase()) {
+        optionals.set(3);
+      }
+      if (struct.isSetTable()) {
+        optionals.set(4);
+      }
+      if (struct.isSetKey()) {
+        optionals.set(5);
+      }
+      if (struct.isSetValue()) {
+        optionals.set(6);
+      }
+      oprot.writeBitSet(optionals, 7);
       if (struct.isSetReplPolicy()) {
         oprot.writeString(struct.replPolicy);
       }
@@ -624,6 +1119,21 @@ import org.slf4j.LoggerFactory;
           }
         }
       }
+      if (struct.isSetCatalog()) {
+        oprot.writeString(struct.catalog);
+      }
+      if (struct.isSetDatabase()) {
+        oprot.writeString(struct.database);
+      }
+      if (struct.isSetTable()) {
+        oprot.writeString(struct.table);
+      }
+      if (struct.isSetKey()) {
+        oprot.writeString(struct.key);
+      }
+      if (struct.isSetValue()) {
+        oprot.writeString(struct.value);
+      }
     }
 
     @Override
@@ -631,7 +1141,7 @@ import org.slf4j.LoggerFactory;
       TTupleProtocol iprot = (TTupleProtocol) prot;
       struct.txnid = iprot.readI64();
       struct.setTxnidIsSet(true);
-      BitSet incoming = iprot.readBitSet(2);
+      BitSet incoming = iprot.readBitSet(7);
       if (incoming.get(0)) {
         struct.replPolicy = iprot.readString();
         struct.setReplPolicyIsSet(true);
@@ -649,6 +1159,26 @@ import org.slf4j.LoggerFactory;
           }
         }
         struct.setWriteEventInfosIsSet(true);
+      }
+      if (incoming.get(2)) {
+        struct.catalog = iprot.readString();
+        struct.setCatalogIsSet(true);
+      }
+      if (incoming.get(3)) {
+        struct.database = iprot.readString();
+        struct.setDatabaseIsSet(true);
+      }
+      if (incoming.get(4)) {
+        struct.table = iprot.readString();
+        struct.setTableIsSet(true);
+      }
+      if (incoming.get(5)) {
+        struct.key = iprot.readString();
+        struct.setKeyIsSet(true);
+      }
+      if (incoming.get(6)) {
+        struct.value = iprot.readString();
+        struct.setValueIsSet(true);
       }
     }
   }

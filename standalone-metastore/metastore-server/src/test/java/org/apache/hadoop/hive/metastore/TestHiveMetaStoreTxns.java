@@ -25,6 +25,7 @@ import org.apache.hadoop.hive.metastore.api.DataOperationType;
 import org.apache.hadoop.hive.metastore.api.HeartbeatTxnRangeResponse;
 import org.apache.hadoop.hive.metastore.api.LockResponse;
 import org.apache.hadoop.hive.metastore.api.LockState;
+import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.txn.TxnDbUtil;
 import org.junit.After;
@@ -33,6 +34,11 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.List;
 
 /**
@@ -52,6 +58,7 @@ public class TestHiveMetaStoreTxns {
 
   private final Configuration conf = MetastoreConf.newMetastoreConf();
   private IMetaStoreClient client;
+  private Connection conn;
 
   @Test
   public void testTxns() throws Exception {
@@ -81,6 +88,77 @@ public class TestHiveMetaStoreTxns {
     Assert.assertTrue(validTxns.isTxnValid(2));
     Assert.assertTrue(validTxns.isTxnValid(3));
     Assert.assertFalse(validTxns.isTxnValid(4));
+  }
+
+  private void cleanUpParamsTable() throws SQLException {
+    Statement stm = conn.createStatement();
+    stm.execute("DELETE FROM TABLE_PARAMS WHERE TBL_ID = 200 AND PARAM_KEY = 'mykey'");
+    stm.execute("DELETE FROM TBLS WHERE TBL_ID = 200");
+    stm.execute("DELETE FROM DBS WHERE DB_ID = 20");
+  }
+
+  @Test
+  public void testTxNWithKeyValue() throws Exception {
+    Statement stm = conn.createStatement();
+    stm.executeUpdate("INSERT INTO DBS(DB_ID, NAME, CTLG_NAME,"
+        + " DB_LOCATION_URI) VALUES(20, 'mydb', 'hive', '/')");
+    stm.executeUpdate("INSERT INTO TBLS(TBL_ID, DB_ID, TBL_NAME,"
+        + " CREATE_TIME, LAST_ACCESS_TIME, RETENTION)"
+        + " VALUES(200, 20, 'mytable', 10, 10, 10)");
+    stm.executeUpdate("INSERT INTO TABLE_PARAMS(TBL_ID, PARAM_KEY)"
+        + " VALUES(200, 'mykey')");
+
+    List<Long> tids = client.openTxns("me", 1).getTxn_ids();
+    Assert.assertEquals(1L, (long) tids.get(0));
+    client.commitTxnWithKeyValue(1, "hive", "mydb",
+        "mytable", "mykey", "myvalue");
+    ValidTxnList validTxns = client.getValidTxns(1);
+    Assert.assertTrue(validTxns.isTxnValid(1));
+
+    ResultSet rs = stm.executeQuery("SELECT TBL_ID, PARAM_KEY, PARAM_VALUE"
+        + " FROM TABLE_PARAMS WHERE TBL_ID = 200");
+    Assert.assertTrue(rs.next());
+    Assert.assertEquals(rs.getLong(1), 200);
+    Assert.assertEquals(rs.getString(2), "mykey");
+    Assert.assertEquals(rs.getString(3), "myvalue");
+    Assert.assertFalse(rs.next());
+    cleanUpParamsTable();
+  }
+
+  @Test
+  public void testTxNWithKeyValueNoTableId() throws Exception {
+    List<Long> tids = client.openTxns("me", 1).getTxn_ids();
+    Assert.assertEquals(1L, (long) tids.get(0));
+    try {
+      client.commitTxnWithKeyValue(1, "hive", "mydb", "mytable", "mykey",
+          "myvalue");
+      Assert.fail("Should have raised exception");
+    } catch (MetaException e) {}
+    ValidTxnList validTxns = client.getValidTxns(1);
+    Assert.assertTrue(validTxns.isTxnValid(1));
+    cleanUpParamsTable();
+  }
+
+  @Test
+  public void testTxNWithKeyValueParamsNotUpdated() throws Exception {
+    Statement stm = conn.createStatement();
+    stm.executeUpdate("INSERT INTO DBS(DB_ID, NAME, CTLG_NAME,"
+        + " DB_LOCATION_URI) VALUES(20, 'mydb', 'hive', '/')");
+    stm.executeUpdate("INSERT INTO TBLS(TBL_ID, DB_ID, TBL_NAME,"
+        + " CREATE_TIME, LAST_ACCESS_TIME, RETENTION)"
+        + " VALUES(200, 20, 'mytable', 10, 10, 10)");
+
+    List<Long> tids = client.openTxns("me", 1).getTxn_ids();
+    Assert.assertEquals(1L, (long) tids.get(0));
+    try {
+      client.commitTxnWithKeyValue(1, "hive", "mydb", "mytable", "mykey",
+          "myvalue");
+      Assert.fail("Exception should have been raised because"
+          + " no rows were updated");
+    } catch (MetaException e) {}
+    ValidTxnList validTxns = client.getValidTxns(1);
+    Assert.assertTrue(validTxns.isTxnValid(1));
+    cleanUpParamsTable();
   }
 
   @Test
@@ -258,10 +336,14 @@ public class TestHiveMetaStoreTxns {
     TxnDbUtil.setConfValues(conf);
     TxnDbUtil.prepDb(conf);
     client = new HiveMetaStoreClient(conf);
+    String connectionStr = MetastoreConf.getVar(conf, MetastoreConf.ConfVars.CONNECT_URL_KEY);
+
+    conn = DriverManager.getConnection(connectionStr);
   }
 
   @After
   public void tearDown() throws Exception {
+    conn.close();
     TxnDbUtil.cleanDb(conf);
   }
 }
