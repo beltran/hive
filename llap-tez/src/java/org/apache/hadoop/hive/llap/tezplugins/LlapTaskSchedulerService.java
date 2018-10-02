@@ -1073,8 +1073,8 @@ public class LlapTaskSchedulerService extends TaskScheduler {
     TezTaskAttemptID id = getTaskAttemptId(task);
     TaskInfo taskInfo = new TaskInfo(localityDelayConf, clock, task, clientCookie, priority,
         capability, hosts, racks, clock.getTime(), id);
-    LOG.info("Received allocateRequest. task={}, priority={}, capability={}, hosts={}",
-        task, priority, capability, Arrays.toString(hosts));
+    LOG.info("[LOCK] Received allocateRequest. task={}, priority={}, capability={}, hosts={},  pendingTaskSize={}",
+        task, priority, capability, Arrays.toString(hosts), pendingTasks.size());
     writeLock.lock();
     try {
       if (!dagRunning && metrics != null && id != null) {
@@ -1097,8 +1097,8 @@ public class LlapTaskSchedulerService extends TaskScheduler {
     TezTaskAttemptID id = getTaskAttemptId(task);
     TaskInfo taskInfo = new TaskInfo(localityDelayConf, clock, task, clientCookie, priority,
         capability, null, null, clock.getTime(), id);
-    LOG.info("Received allocateRequest. task={}, priority={}, capability={}, containerId={}",
-        task, priority, capability, containerId);
+    LOG.info("[LOCK] Received allocateRequest. task={}, priority={}, capability={}, containerId={}, pendingTaskSize={}",
+        task, priority, capability, containerId, pendingTasks.size());
     writeLock.lock();
     try {
       if (!dagRunning && metrics != null && id != null) {
@@ -1747,7 +1747,13 @@ public class LlapTaskSchedulerService extends TaskScheduler {
   @VisibleForTesting
   protected void schedulePendingTasks() throws InterruptedException {
     Ref<TaskInfo> downgradedTask = new Ref<>(null);
+    long startTimeLock = System.nanoTime();
     writeLock.lock();
+    long endTimeLock = System.nanoTime();
+    LOG.info("[LOCK] Time taken to acquire the lock: " + ((endTimeLock - startTimeLock) * 1.0 / 1000000000));
+
+
+    long startTime = System.nanoTime();
     try {
       if (LOG.isDebugEnabled()) {
         LOG.debug("ScheduleRun: {}", constructPendingTaskCountsLogMessage());
@@ -1776,6 +1782,7 @@ public class LlapTaskSchedulerService extends TaskScheduler {
           if (scheduleResult == ScheduleResult.SCHEDULED) {
             taskIter.remove();
           } else {
+            LOG.info("[LOCK] task couldn't be scheduled: "  + scheduleResult);
             if (scheduleResult == ScheduleResult.INADEQUATE_TOTAL_RESOURCES) {
               LOG.info("Inadequate total resources before scheduling pending tasks." +
                   " Signalling scheduler timeout monitor thread to start timer.");
@@ -1881,6 +1888,9 @@ public class LlapTaskSchedulerService extends TaskScheduler {
       }
     } finally {
       writeLock.unlock();
+      long endTime = System.nanoTime();
+      long duration = (endTime - startTime);
+      LOG.info("[LOCK] Duration time with locked: " + (duration * 1.0 / 1000000000));
     }
     if (downgradedTask.value != null) {
       WM_LOG.info("Downgrading " + downgradedTask.value.attemptId);
@@ -1975,6 +1985,7 @@ public class LlapTaskSchedulerService extends TaskScheduler {
     } finally {
       writeLock.unlock();
     }
+    LOG.info("[LOCK] Task allocated: " + taskInfo.task);
     getContext().taskAllocated(taskInfo.task, taskInfo.clientCookie, container);
     return selectHostResult.scheduleResult;
   }
@@ -2235,7 +2246,8 @@ public class LlapTaskSchedulerService extends TaskScheduler {
   private void maybeAddToDelayedTaskQueue(TaskInfo taskInfo) {
     // There's no point adding a task with forceLocality set - since that will never exit the queue.
     // Add other tasks if they are not already in the queue.
-    if (!taskInfo.shouldForceLocality() && !taskInfo.isInDelayedQueue()) {
+    //if (!taskInfo.shouldForceLocality() && !taskInfo.isInDelayedQueue()) {
+    if (!taskInfo.isInDelayedQueue()) {
       taskInfo.setInDelayedQueue(true);
       delayedTaskQueue.add(taskInfo);
     }
@@ -2336,6 +2348,7 @@ public class LlapTaskSchedulerService extends TaskScheduler {
     scheduleLock.lock();
     try {
       pendingScheduleInvocations.set(true);
+      LOG.info("[LOCK] Signaling scheduler condition");
       scheduleCondition.signal();
     } finally {
       scheduleLock.unlock();
@@ -2368,8 +2381,11 @@ public class LlapTaskSchedulerService extends TaskScheduler {
         scheduleLock.lock();
         try {
           while (!pendingScheduleInvocations.get()) {
+            LOG.info("[LOCK] awaiting for scheduleCondition");
+            long startTimeLock = System.nanoTime();
             scheduleCondition.await();
-          }
+            long endTimeLock = System.nanoTime();
+            LOG.info("[LOCK] Time awaiting scheduleCondition: " + ((endTimeLock - startTimeLock) * 1.0 / 1000000000));}
         } catch (InterruptedException e) {
           if (isShutdown.get()) {
             LOG.info("Scheduler thread interrupted after shutdown");

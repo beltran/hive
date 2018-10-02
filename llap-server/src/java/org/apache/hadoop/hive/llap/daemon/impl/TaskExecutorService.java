@@ -693,17 +693,15 @@ public class TaskExecutorService extends AbstractService
 
     boolean canFinish = taskWrapper.getTaskRunnerCallable().canFinish(),
         isGuaranteed = taskWrapper.isGuaranteed();
-    if (LOG.isDebugEnabled()) {
-      LOG.debug("{} scheduled for execution. canFinish={}, isGuaranteed={}",
-          taskWrapper.getRequestId(), canFinish, isGuaranteed);
-    }
+    LOG.info("[LOCK] {} scheduled for execution. canFinish={}, isGuaranteed={}",
+        taskWrapper.getRequestId(), canFinish, isGuaranteed);
 
     // only tasks that cannot finish immediately are pre-emptable. In other words, if all inputs
     // to the tasks are not ready yet, the task is eligible for pre-emptable.
     if (enablePreemption) {
       if (!canFinish || !isGuaranteed) {
         if (LOG.isInfoEnabled()) {
-          LOG.info("Adding {} to pre-emption queue", taskWrapper.getRequestId());
+          LOG.info("[LOCK] Adding {} to pre-emption queue", taskWrapper.getRequestId());
         }
         addToPreemptionQueue(taskWrapper);
       }
@@ -719,7 +717,7 @@ public class TaskExecutorService extends AbstractService
     if (!enablePreemption || preemptionQueue.isEmpty()) {
       return false;
     }
-    LOG.debug("Preemption Queue: {}", preemptionQueue);
+    LOG.info("[LOCK] Preemption Queue: {}", preemptionQueue);
 
     // This call checks under lock if we can actually preempt the task.
     // It is possible to have a race where the update (that's also under lock) makes the
