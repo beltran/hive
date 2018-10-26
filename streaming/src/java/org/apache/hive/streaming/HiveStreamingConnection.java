@@ -498,7 +498,7 @@ public class HiveStreamingConnection implements StreamingConnection {
     // 1 - check that the table is Acid
     if (!AcidUtils.isFullAcidTable(tableObject)) {
       LOG.error("HiveEndPoint " + this + " must use an acid table: " + tableObject.getTTable().getParameters());
-      throw new InvalidTable(database, table, "is not an Acid table");
+      throw new InvalidTable(database, table, "is not an Acid table: " + tableObject.getTTable().getParameters());
     }
 
     if (tableObject.getPartitionKeys() != null && !tableObject.getPartitionKeys().isEmpty()) {
