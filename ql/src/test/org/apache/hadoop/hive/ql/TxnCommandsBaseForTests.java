@@ -24,7 +24,6 @@ import org.apache.hadoop.fs.LocatedFileStatus;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.RemoteIterator;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.txn.TxnDbUtil;
 import org.apache.hadoop.hive.ql.io.HiveInputFormat;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
@@ -153,11 +152,11 @@ public abstract class TxnCommandsBaseForTests {
     return TestTxnCommands2.makeValuesClause(rows);
   }
 
-  void runWorker(HiveConf hiveConf) throws MetaException {
+  void runWorker(HiveConf hiveConf) throws Exception {
     TestTxnCommands2.runWorker(hiveConf);
   }
 
-  void runCleaner(HiveConf hiveConf) throws MetaException {
+  void runCleaner(HiveConf hiveConf) throws Exception {
     TestTxnCommands2.runCleaner(hiveConf);
   }
 

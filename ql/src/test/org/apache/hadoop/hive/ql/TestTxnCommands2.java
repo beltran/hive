@@ -1189,18 +1189,18 @@ public class TestTxnCommands2 {
     }
     return compactionsByState;
   }
-  public static void runWorker(HiveConf hiveConf) throws MetaException {
+  public static void runWorker(HiveConf hiveConf) throws Exception {
     runCompactorThread(hiveConf, CompactorThreadType.WORKER);
   }
-  public static void runCleaner(HiveConf hiveConf) throws MetaException {
+  public static void runCleaner(HiveConf hiveConf) throws Exception {
     runCompactorThread(hiveConf, CompactorThreadType.CLEANER);
   }
-  public static void runInitiator(HiveConf hiveConf) throws MetaException {
+  public static void runInitiator(HiveConf hiveConf) throws Exception {
     runCompactorThread(hiveConf, CompactorThreadType.INITIATOR);
   }
   private enum CompactorThreadType {INITIATOR, WORKER, CLEANER}
   private static void runCompactorThread(HiveConf hiveConf, CompactorThreadType type)
-      throws MetaException {
+      throws Exception {
     AtomicBoolean stop = new AtomicBoolean(true);
     CompactorThread t = null;
     switch (type) {

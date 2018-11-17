@@ -327,7 +327,7 @@ public class Utils {
    * @return
    * @throws SQLException
    */
-  public static JdbcConnectionParams parseURL(String uri, Properties info)
+  public static JdbcConnectionParams  parseURL(String uri, Properties info)
       throws JdbcUriParseException, SQLException, ZooKeeperHiveClientException {
     JdbcConnectionParams connParams = extractURLComponents(uri, info);
     if (ZooKeeperHiveClientHelper.isZkDynamicDiscoveryMode(connParams.getSessionVars())) {

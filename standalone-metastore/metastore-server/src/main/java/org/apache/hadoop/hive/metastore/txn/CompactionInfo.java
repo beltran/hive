@@ -18,7 +18,9 @@
 package org.apache.hadoop.hive.metastore.txn;
 
 import org.apache.hadoop.hive.common.ValidCompactorWriteIdList;
+import org.apache.hadoop.hive.metastore.api.CompactionInfoStruct;
 import org.apache.hadoop.hive.metastore.api.CompactionType;
+import org.apache.hadoop.hive.metastore.api.OptionalCompactionInfoStruct;
 import org.apache.hadoop.hive.metastore.api.TableValidWriteIds;
 
 import java.sql.PreparedStatement;
@@ -33,10 +35,10 @@ public class CompactionInfo implements Comparable<CompactionInfo> {
   public String dbname;
   public String tableName;
   public String partName;
-  char state;
+  public char state;
   public CompactionType type;
-  String workerId;
-  long start;
+  public String workerId;
+  public long start;
   public String runAs;
   public String properties;
   public boolean tooManyAborts = false;
@@ -166,5 +168,58 @@ public class CompactionInfo implements Comparable<CompactionInfo> {
     pStmt.setLong(12, ci.highestWriteId);
     pStmt.setBytes(13, ci.metaInfo);
     pStmt.setString(14, ci.hadoopJobId);
+  }
+
+  public static CompactionInfo compactionStructToInfo(CompactionInfoStruct cr) {
+    if (cr == null) {
+      return null;
+    }
+    CompactionInfo ci = new CompactionInfo(cr.getDbname(), cr.getTablename(), cr.getPartitionname(), cr.getType());
+    ci.id = cr.getId();
+    ci.runAs = cr.getRunas();
+    ci.properties = cr.getProperties();
+    if (cr.isSetToomanyaborts()) {
+      ci.tooManyAborts = cr.isToomanyaborts();
+    }
+    if (cr.isSetState() && cr.getState().length() != 1) {
+      throw new IllegalStateException("State should only be one character but it was set to " + cr.getState());
+    } else if (cr.isSetState()) {
+      ci.state = cr.getState().charAt(0);
+    }
+    ci.workerId = cr.getWorkerId();
+    if (cr.isSetStart()) {
+      ci.start = cr.getStart();
+    }
+    return ci;
+  }
+
+  public static CompactionInfoStruct compactionInfoToStruct(CompactionInfo ci) {
+    if (ci == null) {
+      return null;
+    }
+    CompactionInfoStruct cr = new CompactionInfoStruct(ci.id, ci.dbname, ci.tableName, ci.type);
+    cr.setPartitionname(ci.partName);
+    cr.setRunas(ci.runAs);
+    cr.setProperties(ci.properties);
+    cr.setToomanyaborts(ci.tooManyAborts);
+    cr.setStart(ci.start);
+    cr.setState(Character.toString(ci.state));
+    cr.setWorkerId(ci.workerId);
+    return cr;
+  }
+
+  public static OptionalCompactionInfoStruct compactionInfoToOptionalStruct(CompactionInfo ci) {
+    CompactionInfoStruct cis = compactionInfoToStruct(ci);
+    OptionalCompactionInfoStruct ocis = new OptionalCompactionInfoStruct();
+    if (cis != null) {
+      ocis.setCi(cis);
+    }
+    return ocis;
+  }
+  public static CompactionInfo optionalCompactionInfoStructToInfo(OptionalCompactionInfoStruct ocis) {
+    if (ocis.isSetCi()) {
+      return compactionStructToInfo(ocis.getCi());
+    }
+    return null;
   }
 }
