@@ -333,6 +333,10 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
     if (state == State.INIT) {
       return;
     }
+    LOG.info("[New] state=" + state);
+    LOG.info("[New] areAllParentsInitialized()=" + areAllParentsInitialized());
+    LOG.info("[New] this.getParentOperators()=" + this.getParentOperators());
+    LOG.info("[New] this=" + this);
 
     this.configuration = hconf;
     if (!areAllParentsInitialized()) {
