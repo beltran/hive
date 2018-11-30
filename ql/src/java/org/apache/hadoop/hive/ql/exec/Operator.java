@@ -345,6 +345,10 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
 
     if (LOG.isInfoEnabled()) {
       LOG.info("Initializing operator " + this);
+      StackTraceElement[] ste = Thread.currentThread().getStackTrace();
+      for (StackTraceElement stee: ste) {
+        LOG.info("[New] stee: " + stee);
+      }
     }
 
     if (inputOIs != null) {
