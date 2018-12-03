@@ -216,6 +216,7 @@ public class GenTezUtils {
     if (work.getDummyOps() != null) {
       roots.addAll(work.getDummyOps());
     }
+    LOG.info("[New] roots: " + roots);
     roots.addAll(context.eventOperatorSet);
 
     // need to clone the plan.
@@ -241,6 +242,7 @@ public class GenTezUtils {
       Operator<?> newRoot = it.next();
 
       replacementMap.put(orig, newRoot);
+      LOG.info("[New] newRoot: " + newRoot);
 
       if (newRoot instanceof HashTableDummyOperator) {
         // dummy ops need to be updated to the cloned ones.
