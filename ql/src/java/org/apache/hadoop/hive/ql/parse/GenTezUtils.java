@@ -217,6 +217,7 @@ public class GenTezUtils {
       roots.addAll(work.getDummyOps());
     }
     LOG.info("[New] roots: " + roots);
+    LOG.info("[New] BaseWork: " + work);
     roots.addAll(context.eventOperatorSet);
 
     // need to clone the plan.
