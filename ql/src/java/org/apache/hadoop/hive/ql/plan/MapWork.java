@@ -438,6 +438,11 @@ public class MapWork extends BaseWork {
     if (aliasToWork.get(alias) != null) {
       throw new RuntimeException("Existing work for alias: " + alias);
     }
+    LOG.info("Adding map work");
+    StackTraceElement[] stee = Thread.currentThread().getStackTrace();
+    for(StackTraceElement ste: stee) {
+      LOG.info("[New] ste aliasPut: " + ste);
+    }
     aliasToWork.put(alias, work);
   }
 
@@ -497,6 +502,11 @@ public class MapWork extends BaseWork {
 
     for (Map.Entry<String, Operator<?>> entry: aliasToWork.entrySet()) {
       newAliasToWork.put(entry.getKey(), replacementMap.get(entry.getValue()));
+    }
+
+    StackTraceElement[] stee = Thread.currentThread().getStackTrace();
+    for(StackTraceElement ste: stee) {
+      LOG.info("[New] ste replaceRoots: " + ste);
     }
 
     setAliasToWork(newAliasToWork);

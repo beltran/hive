@@ -369,6 +369,7 @@ public class GenTezUtils {
       }
     }
     LOG.debug("Setting dummy ops for work " + work.getName() + ": " + dummyOps);
+    LOG.debug("[New] replacing with " + work.getName() + ": " + replacementMap);
     work.setDummyOps(dummyOps);
     work.replaceRoots(replacementMap);
   }

@@ -994,6 +994,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     LinkedHashMap<String, Operator<? extends  OperatorDesc>> aliasToWork =
         new LinkedHashMap<String, Operator<? extends OperatorDesc>>();
     aliasToWork.put(mergeFilesDesc.getInputDir().toString(), mergeOp);
+    LOG.info("[New] Setting alias to Work: " + aliasToWork);
     mergeWork.setAliasToWork(aliasToWork);
     DriverContext driverCxt = new DriverContext();
     Task<?> task;
