@@ -383,6 +383,11 @@ public class MapWork extends BaseWork {
 
   public void setAliasToWork(
       final LinkedHashMap<String, Operator<? extends OperatorDesc>> aliasToWork) {
+    LOG.info("[New] Setting alias to Work");
+    StackTraceElement[] stee = Thread.currentThread().getStackTrace();
+    for(StackTraceElement ste: stee) {
+      LOG.info("[New] ste setAliasToWork: " + ste);
+    }
     this.aliasToWork = aliasToWork;
   }
 
