@@ -244,7 +244,7 @@ public class GenTezWork implements NodeProcessor {
         // mapjoin later
         if (!context.mapJoinWorkMap.containsKey(mj)) {
           List<BaseWork> workItems = new LinkedList<BaseWork>();
-          workItems.add(work);
+            workItems.add(work);
           context.mapJoinWorkMap.put(mj, workItems);
         } else {
           context.mapJoinWorkMap.get(mj).add(work);

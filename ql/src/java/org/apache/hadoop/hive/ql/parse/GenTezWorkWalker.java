@@ -19,10 +19,13 @@
 package org.apache.hadoop.hive.ql.parse;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 
+import org.apache.hadoop.hive.ql.exec.MapJoinOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.UnionOperator;
 import org.apache.hadoop.hive.ql.lib.DefaultGraphWalker;
@@ -97,6 +100,17 @@ public class GenTezWorkWalker extends DefaultGraphWalker {
 
     if (skip == null || !skip) {
       // move all the children to the front of queue
+      children.sort(new Comparator<Node>() {
+        public int compare(Node n1, Node n2) {
+          if (n1.getName().equals(MapJoinOperator.getOperatorName())) {
+            return -1;
+          } else if (n2.getName().equals(MapJoinOperator.getOperatorName())) {
+            return 1;
+          }
+          return 0;
+        }
+      });
+
       for (Node ch : children) {
 
         // and restore the state before walking each child
