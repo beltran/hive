@@ -28,6 +28,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -43,6 +44,7 @@ import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.PathFilter;
+import org.apache.hadoop.fs.RemoteIterator;
 import org.apache.hadoop.hive.common.*;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
@@ -85,6 +87,7 @@ import org.slf4j.LoggerFactory;
 import com.google.common.annotations.VisibleForTesting;
 
 import java.nio.charset.Charset;
+import java.util.stream.Collectors;
 
 /**
  * Utilities that are shared by all of the ACID input and output formats. They
@@ -2534,6 +2537,70 @@ public class AcidUtils {
       validateAcidFiles(fileStatuses, fs);
     } catch (IOException | URISyntaxException ex) {
       throw new SemanticException(ErrorMsg.INVALID_PATH.getMsg(ex.getMessage()), ex);
+    }
+  }
+
+  public static List<FileStatus> deleteDeltaDirectories(Path rootPartition,
+      Configuration conf, List<Long> writeIds) throws IOException {
+    FileSystem fs = rootPartition.getFileSystem(conf);
+    PathFilter filter = (p) -> {
+      String name = p.getName();
+      for (Long wId: writeIds) {
+        if (name.startsWith(deltaSubdir(wId, wId)) && !name.contains("=")) {
+          return true;
+        }
+      }
+      return false;
+    };
+    List<FileStatus> deleted = new ArrayList<>();
+    deleteDeltaDirectoriesAux(rootPartition, fs, filter, deleted);
+    return deleted;
+  }
+
+  private static void deleteDeltaDirectoriesAux(Path root, FileSystem fs, PathFilter filter, List<FileStatus> deleted) throws IOException {
+    RemoteIterator<FileStatus> it = listIterator(fs, root, null);
+    while (it.hasNext()) {
+      FileStatus fStatus = it.next();
+      if (fStatus.isDirectory()) {
+        if (filter.accept(fStatus.getPath())) {
+          fs.delete(fStatus.getPath(), true);
+          deleted.add(fStatus);
+        } else {
+          deleteDeltaDirectoriesAux(fStatus.getPath(), fs, filter, deleted);
+          if (isDirectoryEmpty(fs, fStatus.getPath())) {
+            fs.delete(fStatus.getPath(), false);
+            deleted.add(fStatus);
+          }
+        }
+      }
+    }
+  }
+
+  private static boolean isDirectoryEmpty(FileSystem fs, Path path) throws IOException {
+    RemoteIterator<FileStatus> it = listIterator(fs, path, null);
+    return !it.hasNext();
+  }
+
+  private static RemoteIterator<FileStatus> listIterator(FileSystem fs, Path path, PathFilter filter)
+      throws IOException {
+    try {
+      return new ToFileStatusIterator(SHIMS.listLocatedHdfsStatusIterator(fs, path, filter));
+    } catch (Throwable t) {
+      return HdfsUtils.listLocatedStatusIterator(fs, path, filter);
+    }
+  }
+
+  static class ToFileStatusIterator implements RemoteIterator<FileStatus> {
+    private final RemoteIterator<HdfsFileStatusWithId> it;
+    ToFileStatusIterator(RemoteIterator<HdfsFileStatusWithId> it) {
+      this.it = it;
+    }
+    @Override public boolean hasNext() throws IOException {
+      return it.hasNext();
+    }
+
+    @Override public FileStatus next() throws IOException {
+      return it.next().getFileStatus();
     }
   }
 }

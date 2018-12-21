@@ -50,6 +50,7 @@ import org.slf4j.LoggerFactory;
   private static final org.apache.thrift.protocol.TField WORKER_ID_FIELD_DESC = new org.apache.thrift.protocol.TField("workerId", org.apache.thrift.protocol.TType.STRING, (short)10);
   private static final org.apache.thrift.protocol.TField START_FIELD_DESC = new org.apache.thrift.protocol.TField("start", org.apache.thrift.protocol.TType.I64, (short)11);
   private static final org.apache.thrift.protocol.TField HIGHEST_WRITE_ID_FIELD_DESC = new org.apache.thrift.protocol.TField("highestWriteId", org.apache.thrift.protocol.TType.I64, (short)12);
+  private static final org.apache.thrift.protocol.TField WRITE_IDS_FIELD_DESC = new org.apache.thrift.protocol.TField("writeIds", org.apache.thrift.protocol.TType.LIST, (short)13);
 
   private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
   static {
@@ -69,6 +70,7 @@ import org.slf4j.LoggerFactory;
   private String workerId; // optional
   private long start; // optional
   private long highestWriteId; // optional
+  private List<Long> writeIds; // optional
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
@@ -87,7 +89,8 @@ import org.slf4j.LoggerFactory;
     STATE((short)9, "state"),
     WORKER_ID((short)10, "workerId"),
     START((short)11, "start"),
-    HIGHEST_WRITE_ID((short)12, "highestWriteId");
+    HIGHEST_WRITE_ID((short)12, "highestWriteId"),
+    WRITE_IDS((short)13, "writeIds");
 
     private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -126,6 +129,8 @@ import org.slf4j.LoggerFactory;
           return START;
         case 12: // HIGHEST_WRITE_ID
           return HIGHEST_WRITE_ID;
+        case 13: // WRITE_IDS
+          return WRITE_IDS;
         default:
           return null;
       }
@@ -171,7 +176,7 @@ import org.slf4j.LoggerFactory;
   private static final int __START_ISSET_ID = 2;
   private static final int __HIGHESTWRITEID_ISSET_ID = 3;
   private byte __isset_bitfield = 0;
-  private static final _Fields optionals[] = {_Fields.PARTITIONNAME,_Fields.RUNAS,_Fields.PROPERTIES,_Fields.TOOMANYABORTS,_Fields.STATE,_Fields.WORKER_ID,_Fields.START,_Fields.HIGHEST_WRITE_ID};
+  private static final _Fields optionals[] = {_Fields.PARTITIONNAME,_Fields.RUNAS,_Fields.PROPERTIES,_Fields.TOOMANYABORTS,_Fields.STATE,_Fields.WORKER_ID,_Fields.START,_Fields.HIGHEST_WRITE_ID,_Fields.WRITE_IDS};
   public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
     Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
@@ -199,6 +204,9 @@ import org.slf4j.LoggerFactory;
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I64)));
     tmpMap.put(_Fields.HIGHEST_WRITE_ID, new org.apache.thrift.meta_data.FieldMetaData("highestWriteId", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I64)));
+    tmpMap.put(_Fields.WRITE_IDS, new org.apache.thrift.meta_data.FieldMetaData("writeIds", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
+        new org.apache.thrift.meta_data.ListMetaData(org.apache.thrift.protocol.TType.LIST, 
+            new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I64))));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
     org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(CompactionInfoStruct.class, metaDataMap);
   }
@@ -253,6 +261,10 @@ import org.slf4j.LoggerFactory;
     }
     this.start = other.start;
     this.highestWriteId = other.highestWriteId;
+    if (other.isSetWriteIds()) {
+      List<Long> __this__writeIds = new ArrayList<Long>(other.writeIds);
+      this.writeIds = __this__writeIds;
+    }
   }
 
   public CompactionInfoStruct deepCopy() {
@@ -277,6 +289,7 @@ import org.slf4j.LoggerFactory;
     this.start = 0;
     setHighestWriteIdIsSet(false);
     this.highestWriteId = 0;
+    this.writeIds = null;
   }
 
   public long getId() {
@@ -559,6 +572,44 @@ import org.slf4j.LoggerFactory;
     __isset_bitfield = EncodingUtils.setBit(__isset_bitfield, __HIGHESTWRITEID_ISSET_ID, value);
   }
 
+  public int getWriteIdsSize() {
+    return (this.writeIds == null) ? 0 : this.writeIds.size();
+  }
+
+  public java.util.Iterator<Long> getWriteIdsIterator() {
+    return (this.writeIds == null) ? null : this.writeIds.iterator();
+  }
+
+  public void addToWriteIds(long elem) {
+    if (this.writeIds == null) {
+      this.writeIds = new ArrayList<Long>();
+    }
+    this.writeIds.add(elem);
+  }
+
+  public List<Long> getWriteIds() {
+    return this.writeIds;
+  }
+
+  public void setWriteIds(List<Long> writeIds) {
+    this.writeIds = writeIds;
+  }
+
+  public void unsetWriteIds() {
+    this.writeIds = null;
+  }
+
+  /** Returns true if field writeIds is set (has been assigned a value) and false otherwise */
+  public boolean isSetWriteIds() {
+    return this.writeIds != null;
+  }
+
+  public void setWriteIdsIsSet(boolean value) {
+    if (!value) {
+      this.writeIds = null;
+    }
+  }
+
   public void setFieldValue(_Fields field, Object value) {
     switch (field) {
     case ID:
@@ -657,6 +708,14 @@ import org.slf4j.LoggerFactory;
       }
       break;
 
+    case WRITE_IDS:
+      if (value == null) {
+        unsetWriteIds();
+      } else {
+        setWriteIds((List<Long>)value);
+      }
+      break;
+
     }
   }
 
@@ -698,6 +757,9 @@ import org.slf4j.LoggerFactory;
     case HIGHEST_WRITE_ID:
       return getHighestWriteId();
 
+    case WRITE_IDS:
+      return getWriteIds();
+
     }
     throw new IllegalStateException();
   }
@@ -733,6 +795,8 @@ import org.slf4j.LoggerFactory;
       return isSetStart();
     case HIGHEST_WRITE_ID:
       return isSetHighestWriteId();
+    case WRITE_IDS:
+      return isSetWriteIds();
     }
     throw new IllegalStateException();
   }
@@ -858,6 +922,15 @@ import org.slf4j.LoggerFactory;
         return false;
     }
 
+    boolean this_present_writeIds = true && this.isSetWriteIds();
+    boolean that_present_writeIds = true && that.isSetWriteIds();
+    if (this_present_writeIds || that_present_writeIds) {
+      if (!(this_present_writeIds && that_present_writeIds))
+        return false;
+      if (!this.writeIds.equals(that.writeIds))
+        return false;
+    }
+
     return true;
   }
 
@@ -924,6 +997,11 @@ import org.slf4j.LoggerFactory;
     list.add(present_highestWriteId);
     if (present_highestWriteId)
       list.add(highestWriteId);
+
+    boolean present_writeIds = true && (isSetWriteIds());
+    list.add(present_writeIds);
+    if (present_writeIds)
+      list.add(writeIds);
 
     return list.hashCode();
   }
@@ -1056,6 +1134,16 @@ import org.slf4j.LoggerFactory;
         return lastComparison;
       }
     }
+    lastComparison = Boolean.valueOf(isSetWriteIds()).compareTo(other.isSetWriteIds());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetWriteIds()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.writeIds, other.writeIds);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
     return 0;
   }
 
@@ -1169,6 +1257,16 @@ import org.slf4j.LoggerFactory;
       if (!first) sb.append(", ");
       sb.append("highestWriteId:");
       sb.append(this.highestWriteId);
+      first = false;
+    }
+    if (isSetWriteIds()) {
+      if (!first) sb.append(", ");
+      sb.append("writeIds:");
+      if (this.writeIds == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.writeIds);
+      }
       first = false;
     }
     sb.append(")");
@@ -1328,6 +1426,24 @@ import org.slf4j.LoggerFactory;
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
+          case 13: // WRITE_IDS
+            if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
+              {
+                org.apache.thrift.protocol.TList _list716 = iprot.readListBegin();
+                struct.writeIds = new ArrayList<Long>(_list716.size);
+                long _elem717;
+                for (int _i718 = 0; _i718 < _list716.size; ++_i718)
+                {
+                  _elem717 = iprot.readI64();
+                  struct.writeIds.add(_elem717);
+                }
+                iprot.readListEnd();
+              }
+              struct.setWriteIdsIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
           default:
             org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
         }
@@ -1409,6 +1525,20 @@ import org.slf4j.LoggerFactory;
         oprot.writeI64(struct.highestWriteId);
         oprot.writeFieldEnd();
       }
+      if (struct.writeIds != null) {
+        if (struct.isSetWriteIds()) {
+          oprot.writeFieldBegin(WRITE_IDS_FIELD_DESC);
+          {
+            oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.I64, struct.writeIds.size()));
+            for (long _iter719 : struct.writeIds)
+            {
+              oprot.writeI64(_iter719);
+            }
+            oprot.writeListEnd();
+          }
+          oprot.writeFieldEnd();
+        }
+      }
       oprot.writeFieldStop();
       oprot.writeStructEnd();
     }
@@ -1455,7 +1585,10 @@ import org.slf4j.LoggerFactory;
       if (struct.isSetHighestWriteId()) {
         optionals.set(7);
       }
-      oprot.writeBitSet(optionals, 8);
+      if (struct.isSetWriteIds()) {
+        optionals.set(8);
+      }
+      oprot.writeBitSet(optionals, 9);
       if (struct.isSetPartitionname()) {
         oprot.writeString(struct.partitionname);
       }
@@ -1480,6 +1613,15 @@ import org.slf4j.LoggerFactory;
       if (struct.isSetHighestWriteId()) {
         oprot.writeI64(struct.highestWriteId);
       }
+      if (struct.isSetWriteIds()) {
+        {
+          oprot.writeI32(struct.writeIds.size());
+          for (long _iter720 : struct.writeIds)
+          {
+            oprot.writeI64(_iter720);
+          }
+        }
+      }
     }
 
     @Override
@@ -1493,7 +1635,7 @@ import org.slf4j.LoggerFactory;
       struct.setTablenameIsSet(true);
       struct.type = org.apache.hadoop.hive.metastore.api.CompactionType.findByValue(iprot.readI32());
       struct.setTypeIsSet(true);
-      BitSet incoming = iprot.readBitSet(8);
+      BitSet incoming = iprot.readBitSet(9);
       if (incoming.get(0)) {
         struct.partitionname = iprot.readString();
         struct.setPartitionnameIsSet(true);
@@ -1525,6 +1667,19 @@ import org.slf4j.LoggerFactory;
       if (incoming.get(7)) {
         struct.highestWriteId = iprot.readI64();
         struct.setHighestWriteIdIsSet(true);
+      }
+      if (incoming.get(8)) {
+        {
+          org.apache.thrift.protocol.TList _list721 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.I64, iprot.readI32());
+          struct.writeIds = new ArrayList<Long>(_list721.size);
+          long _elem722;
+          for (int _i723 = 0; _i723 < _list721.size; ++_i723)
+          {
+            _elem722 = iprot.readI64();
+            struct.writeIds.add(_elem722);
+          }
+        }
+        struct.setWriteIdsIsSet(true);
       }
     }
   }

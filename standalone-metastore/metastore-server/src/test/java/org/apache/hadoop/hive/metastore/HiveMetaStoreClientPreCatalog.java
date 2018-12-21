@@ -2357,6 +2357,16 @@ public class HiveMetaStoreClientPreCatalog implements IMetaStoreClient, AutoClos
     return allocateTableWriteIdsBatchIntr(rqst);
   }
 
+  @Override
+  public List<TxnToWriteId> allocateTableWriteIdsBatch(List<Long> txnIds, String dbName,
+      String tableName, boolean dynamicPartitions)
+      throws TException {
+    AllocateTableWriteIdsRequest rqst = new AllocateTableWriteIdsRequest(dbName, tableName);
+    rqst.setTxnIds(txnIds);
+    rqst.setDynamicPartitions(dynamicPartitions);
+    return allocateTableWriteIdsBatchIntr(rqst);
+  }
+
   private List<TxnToWriteId> allocateTableWriteIdsBatchIntr(AllocateTableWriteIdsRequest rqst) throws TException {
     return client.allocate_table_write_ids(rqst).getTxnToWriteIds();
   }

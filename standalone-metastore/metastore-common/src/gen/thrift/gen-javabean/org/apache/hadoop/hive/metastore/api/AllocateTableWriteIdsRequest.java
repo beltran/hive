@@ -43,6 +43,7 @@ import org.slf4j.LoggerFactory;
   private static final org.apache.thrift.protocol.TField TXN_IDS_FIELD_DESC = new org.apache.thrift.protocol.TField("txnIds", org.apache.thrift.protocol.TType.LIST, (short)3);
   private static final org.apache.thrift.protocol.TField REPL_POLICY_FIELD_DESC = new org.apache.thrift.protocol.TField("replPolicy", org.apache.thrift.protocol.TType.STRING, (short)4);
   private static final org.apache.thrift.protocol.TField SRC_TXN_TO_WRITE_ID_LIST_FIELD_DESC = new org.apache.thrift.protocol.TField("srcTxnToWriteIdList", org.apache.thrift.protocol.TType.LIST, (short)5);
+  private static final org.apache.thrift.protocol.TField DYNAMIC_PARTITIONS_FIELD_DESC = new org.apache.thrift.protocol.TField("dynamicPartitions", org.apache.thrift.protocol.TType.BOOL, (short)6);
 
   private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
   static {
@@ -55,6 +56,7 @@ import org.slf4j.LoggerFactory;
   private List<Long> txnIds; // optional
   private String replPolicy; // optional
   private List<TxnToWriteId> srcTxnToWriteIdList; // optional
+  private boolean dynamicPartitions; // optional
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
@@ -62,7 +64,8 @@ import org.slf4j.LoggerFactory;
     TABLE_NAME((short)2, "tableName"),
     TXN_IDS((short)3, "txnIds"),
     REPL_POLICY((short)4, "replPolicy"),
-    SRC_TXN_TO_WRITE_ID_LIST((short)5, "srcTxnToWriteIdList");
+    SRC_TXN_TO_WRITE_ID_LIST((short)5, "srcTxnToWriteIdList"),
+    DYNAMIC_PARTITIONS((short)6, "dynamicPartitions");
 
     private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -87,6 +90,8 @@ import org.slf4j.LoggerFactory;
           return REPL_POLICY;
         case 5: // SRC_TXN_TO_WRITE_ID_LIST
           return SRC_TXN_TO_WRITE_ID_LIST;
+        case 6: // DYNAMIC_PARTITIONS
+          return DYNAMIC_PARTITIONS;
         default:
           return null;
       }
@@ -127,7 +132,9 @@ import org.slf4j.LoggerFactory;
   }
 
   // isset id assignments
-  private static final _Fields optionals[] = {_Fields.TXN_IDS,_Fields.REPL_POLICY,_Fields.SRC_TXN_TO_WRITE_ID_LIST};
+  private static final int __DYNAMICPARTITIONS_ISSET_ID = 0;
+  private byte __isset_bitfield = 0;
+  private static final _Fields optionals[] = {_Fields.TXN_IDS,_Fields.REPL_POLICY,_Fields.SRC_TXN_TO_WRITE_ID_LIST,_Fields.DYNAMIC_PARTITIONS};
   public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
     Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
@@ -143,6 +150,8 @@ import org.slf4j.LoggerFactory;
     tmpMap.put(_Fields.SRC_TXN_TO_WRITE_ID_LIST, new org.apache.thrift.meta_data.FieldMetaData("srcTxnToWriteIdList", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.ListMetaData(org.apache.thrift.protocol.TType.LIST, 
             new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRUCT            , "TxnToWriteId"))));
+    tmpMap.put(_Fields.DYNAMIC_PARTITIONS, new org.apache.thrift.meta_data.FieldMetaData("dynamicPartitions", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.BOOL)));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
     org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(AllocateTableWriteIdsRequest.class, metaDataMap);
   }
@@ -163,6 +172,7 @@ import org.slf4j.LoggerFactory;
    * Performs a deep copy on <i>other</i>.
    */
   public AllocateTableWriteIdsRequest(AllocateTableWriteIdsRequest other) {
+    __isset_bitfield = other.__isset_bitfield;
     if (other.isSetDbName()) {
       this.dbName = other.dbName;
     }
@@ -183,6 +193,7 @@ import org.slf4j.LoggerFactory;
       }
       this.srcTxnToWriteIdList = __this__srcTxnToWriteIdList;
     }
+    this.dynamicPartitions = other.dynamicPartitions;
   }
 
   public AllocateTableWriteIdsRequest deepCopy() {
@@ -196,6 +207,8 @@ import org.slf4j.LoggerFactory;
     this.txnIds = null;
     this.replPolicy = null;
     this.srcTxnToWriteIdList = null;
+    setDynamicPartitionsIsSet(false);
+    this.dynamicPartitions = false;
   }
 
   public String getDbName() {
@@ -343,6 +356,28 @@ import org.slf4j.LoggerFactory;
     }
   }
 
+  public boolean isDynamicPartitions() {
+    return this.dynamicPartitions;
+  }
+
+  public void setDynamicPartitions(boolean dynamicPartitions) {
+    this.dynamicPartitions = dynamicPartitions;
+    setDynamicPartitionsIsSet(true);
+  }
+
+  public void unsetDynamicPartitions() {
+    __isset_bitfield = EncodingUtils.clearBit(__isset_bitfield, __DYNAMICPARTITIONS_ISSET_ID);
+  }
+
+  /** Returns true if field dynamicPartitions is set (has been assigned a value) and false otherwise */
+  public boolean isSetDynamicPartitions() {
+    return EncodingUtils.testBit(__isset_bitfield, __DYNAMICPARTITIONS_ISSET_ID);
+  }
+
+  public void setDynamicPartitionsIsSet(boolean value) {
+    __isset_bitfield = EncodingUtils.setBit(__isset_bitfield, __DYNAMICPARTITIONS_ISSET_ID, value);
+  }
+
   public void setFieldValue(_Fields field, Object value) {
     switch (field) {
     case DB_NAME:
@@ -385,6 +420,14 @@ import org.slf4j.LoggerFactory;
       }
       break;
 
+    case DYNAMIC_PARTITIONS:
+      if (value == null) {
+        unsetDynamicPartitions();
+      } else {
+        setDynamicPartitions((Boolean)value);
+      }
+      break;
+
     }
   }
 
@@ -404,6 +447,9 @@ import org.slf4j.LoggerFactory;
 
     case SRC_TXN_TO_WRITE_ID_LIST:
       return getSrcTxnToWriteIdList();
+
+    case DYNAMIC_PARTITIONS:
+      return isDynamicPartitions();
 
     }
     throw new IllegalStateException();
@@ -426,6 +472,8 @@ import org.slf4j.LoggerFactory;
       return isSetReplPolicy();
     case SRC_TXN_TO_WRITE_ID_LIST:
       return isSetSrcTxnToWriteIdList();
+    case DYNAMIC_PARTITIONS:
+      return isSetDynamicPartitions();
     }
     throw new IllegalStateException();
   }
@@ -488,6 +536,15 @@ import org.slf4j.LoggerFactory;
         return false;
     }
 
+    boolean this_present_dynamicPartitions = true && this.isSetDynamicPartitions();
+    boolean that_present_dynamicPartitions = true && that.isSetDynamicPartitions();
+    if (this_present_dynamicPartitions || that_present_dynamicPartitions) {
+      if (!(this_present_dynamicPartitions && that_present_dynamicPartitions))
+        return false;
+      if (this.dynamicPartitions != that.dynamicPartitions)
+        return false;
+    }
+
     return true;
   }
 
@@ -519,6 +576,11 @@ import org.slf4j.LoggerFactory;
     list.add(present_srcTxnToWriteIdList);
     if (present_srcTxnToWriteIdList)
       list.add(srcTxnToWriteIdList);
+
+    boolean present_dynamicPartitions = true && (isSetDynamicPartitions());
+    list.add(present_dynamicPartitions);
+    if (present_dynamicPartitions)
+      list.add(dynamicPartitions);
 
     return list.hashCode();
   }
@@ -577,6 +639,16 @@ import org.slf4j.LoggerFactory;
     }
     if (isSetSrcTxnToWriteIdList()) {
       lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.srcTxnToWriteIdList, other.srcTxnToWriteIdList);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
+    lastComparison = Boolean.valueOf(isSetDynamicPartitions()).compareTo(other.isSetDynamicPartitions());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetDynamicPartitions()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.dynamicPartitions, other.dynamicPartitions);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -646,6 +718,12 @@ import org.slf4j.LoggerFactory;
       }
       first = false;
     }
+    if (isSetDynamicPartitions()) {
+      if (!first) sb.append(", ");
+      sb.append("dynamicPartitions:");
+      sb.append(this.dynamicPartitions);
+      first = false;
+    }
     sb.append(")");
     return sb.toString();
   }
@@ -673,6 +751,8 @@ import org.slf4j.LoggerFactory;
 
   private void readObject(java.io.ObjectInputStream in) throws java.io.IOException, ClassNotFoundException {
     try {
+      // it doesn't seem like you should have to do this, but java serialization is wacky, and doesn't call the default constructor.
+      __isset_bitfield = 0;
       read(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(in)));
     } catch (org.apache.thrift.TException te) {
       throw new java.io.IOException(te);
@@ -758,6 +838,14 @@ import org.slf4j.LoggerFactory;
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
+          case 6: // DYNAMIC_PARTITIONS
+            if (schemeField.type == org.apache.thrift.protocol.TType.BOOL) {
+              struct.dynamicPartitions = iprot.readBool();
+              struct.setDynamicPartitionsIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
           default:
             org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
         }
@@ -816,6 +904,11 @@ import org.slf4j.LoggerFactory;
           oprot.writeFieldEnd();
         }
       }
+      if (struct.isSetDynamicPartitions()) {
+        oprot.writeFieldBegin(DYNAMIC_PARTITIONS_FIELD_DESC);
+        oprot.writeBool(struct.dynamicPartitions);
+        oprot.writeFieldEnd();
+      }
       oprot.writeFieldStop();
       oprot.writeStructEnd();
     }
@@ -845,7 +938,10 @@ import org.slf4j.LoggerFactory;
       if (struct.isSetSrcTxnToWriteIdList()) {
         optionals.set(2);
       }
-      oprot.writeBitSet(optionals, 3);
+      if (struct.isSetDynamicPartitions()) {
+        optionals.set(3);
+      }
+      oprot.writeBitSet(optionals, 4);
       if (struct.isSetTxnIds()) {
         {
           oprot.writeI32(struct.txnIds.size());
@@ -867,6 +963,9 @@ import org.slf4j.LoggerFactory;
           }
         }
       }
+      if (struct.isSetDynamicPartitions()) {
+        oprot.writeBool(struct.dynamicPartitions);
+      }
     }
 
     @Override
@@ -876,7 +975,7 @@ import org.slf4j.LoggerFactory;
       struct.setDbNameIsSet(true);
       struct.tableName = iprot.readString();
       struct.setTableNameIsSet(true);
-      BitSet incoming = iprot.readBitSet(3);
+      BitSet incoming = iprot.readBitSet(4);
       if (incoming.get(0)) {
         {
           org.apache.thrift.protocol.TList _list660 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.I64, iprot.readI32());
@@ -907,6 +1006,10 @@ import org.slf4j.LoggerFactory;
           }
         }
         struct.setSrcTxnToWriteIdListIsSet(true);
+      }
+      if (incoming.get(3)) {
+        struct.dynamicPartitions = iprot.readBool();
+        struct.setDynamicPartitionsIsSet(true);
       }
     }
   }

@@ -2922,6 +2922,16 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   }
 
   @Override
+  public List<TxnToWriteId> allocateTableWriteIdsBatch(List<Long> txnIds, String dbName,
+      String tableName, boolean dynamicPartitions)
+      throws TException {
+    AllocateTableWriteIdsRequest rqst = new AllocateTableWriteIdsRequest(dbName, tableName);
+    rqst.setTxnIds(txnIds);
+    rqst.setDynamicPartitions(dynamicPartitions);
+    return allocateTableWriteIdsBatchIntr(rqst);
+  }
+
+  @Override
   public List<TxnToWriteId> replAllocateTableWriteIdsBatch(String dbName, String tableName,
                                  String replPolicy, List<TxnToWriteId> srcTxnToWriteIdList) throws TException {
     AllocateTableWriteIdsRequest rqst = new AllocateTableWriteIdsRequest(dbName, tableName);

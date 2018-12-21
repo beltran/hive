@@ -3006,6 +3006,17 @@ public interface IMetaStoreClient {
   List<TxnToWriteId> allocateTableWriteIdsBatch(List<Long> txnIds, String dbName, String tableName) throws TException;
 
   /**
+   * Allocate a per table write ID and associate it with the given transaction.
+   * @param txnIds ids of transaction batchto which the allocated write ID to be associated.
+   * @param dbName name of DB in which the table belongs.
+   * @param tableName table to which the write ID to be allocated
+   * @param dynamicPartitions indicate whether the table is dynamic partitioned and new partitions
+   *                           will be created in the transaction.
+   * @throws TException
+   */
+  List<TxnToWriteId> allocateTableWriteIdsBatch(List<Long> txnIds, String dbName, String tableName, boolean dynamicPartitions) throws TException;
+
+  /**
    * Allocate a per table write ID and associate it with the given transaction. Used by replication load task.
    * @param dbName name of DB in which the table belongs.
    * @param tableName table to which the write ID to be allocated

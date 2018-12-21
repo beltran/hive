@@ -159,6 +159,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
   // Compactor types
   static final protected char MAJOR_TYPE = 'a';
   static final protected char MINOR_TYPE = 'i';
+  static final protected char CLEAN_ABORTED = 'p';
 
   // Transaction states
   static final protected char TXN_ABORTED = 'a';
@@ -201,7 +202,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
    * These are the valid values for TXN_COMPONENTS.TC_OPERATION_TYPE
    */
   enum OperationType {
-    SELECT('s'), INSERT('i'), UPDATE('u'), DELETE('d'), COMPACT('c');
+    SELECT('s'), INSERT('i'), UPDATE('u'), DELETE('d'), COMPACT('c'), ALL_PARTITIONS('p');
     private final char sqlConst;
     OperationType(char sqlConst) {
       this.sqlConst = sqlConst;
@@ -221,6 +222,8 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
           return DELETE;
         case 'c':
           return COMPACT;
+        case 'p':
+          return ALL_PARTITIONS;
         default:
           throw new IllegalArgumentException(quoteChar(sqlConst));
       }
@@ -1754,6 +1757,16 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
           return new AllocateTableWriteIdsResponse(txnToWriteIds);
         }
 
+        // We are going to add an entry to TXN_COMPONENTS so in case the transaction is aborted
+        // before calling  addDynamicPartitions we will delete all the possible dirty files.
+        // This is only possible if the there's a single transaction since we wouldn't know
+        // what files to delete if there where more.
+        if (rqst.isSetDynamicPartitions() && rqst.isDynamicPartitions() && numOfWriteIds > 1) {
+          throw new MetaException(
+              "When using dynamic partitions only a single transaction is allowed in the batch,"
+                  + " number of transactions = " + numOfWriteIds);
+        }
+
         long srcWriteId = 0;
         if (rqst.isSetReplPolicy()) {
           // In replication flow, we always need to allocate write ID equal to that of source.
@@ -1830,6 +1843,22 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
                 paramsList);
         for (PreparedStatement pst : insertPreparedStmts) {
           pst.execute();
+        }
+
+        // Add the entry to TXN_COMPONENTS in case the transaction fails
+        // before calling addDynamicPartitions
+        if (rqst.isSetDynamicPartitions() && rqst.isDynamicPartitions()) {
+          long onlyWriteId = writeId - 1;
+          long txnIdComponents = txnIds.get(0);
+          s = "insert into TXN_COMPONENTS(TC_TXNID, TC_DATABASE, TC_TABLE,"
+              + " TC_OPERATION_TYPE, TC_WRITEID) values (?, ?, ?, ?, ?)";
+          LOG.debug("Going to execute insert < " + s.replaceAll("\\?", "{}")+ ">",
+              txnIdComponents, quoteString(dbName), quoteString(tblName),
+              quoteChar(OperationType.ALL_PARTITIONS.getSqlConst()), onlyWriteId);
+          PreparedStatement insertPreparedStmt = sqlGenerator.prepareStmtWithParameters(dbConn, s,
+              Arrays.asList(Long.toString(txnIdComponents), dbName, tblName,
+                  OperationType.ALL_PARTITIONS.toString(), Long.toString(onlyWriteId)));
+          insertPreparedStmt.execute();
         }
 
         if (transactionalListeners != null) {
@@ -2373,7 +2402,9 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
                     /**
                      * we know this is part of DP operation and so we'll get
                      * {@link #addDynamicPartitions(AddDynamicPartitions)} call with the list
-                     * of partitions actually chaged.
+                     * of partitions actually changed. In case the transaction is aborted before
+                     * this, we have already added an entry in TXN_COMPONENTS to account for this
+                     * in {@link #allocateTableWriteIds(AllocateTableWriteIdsRequest)}.
                      */
                     updateTxnComponents = !lc.isIsDynamicPartitionWrite();
                   }
@@ -3000,9 +3031,12 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         long id = generateCompactionQueueId(stmt);
 
         List<String> params = new ArrayList<>();
+        // There could a clean abort compaction for the same database, table and with null
+        // partition but in this case it would be in READY_FOR_CLEANING state.
         StringBuilder sb = new StringBuilder("select cq_id, cq_state from COMPACTION_QUEUE where").
           append(" cq_state IN(").append(quoteChar(INITIATED_STATE)).
             append(",").append(quoteChar(WORKING_STATE)).
+            append(",").append(quoteChar(READY_FOR_CLEANING)).
           append(") AND cq_database=?").
           append(" AND cq_table=?").append(" AND ");
         params.add(rqst.getDbname());
@@ -3012,6 +3046,12 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         } else {
           sb.append("cq_partition=?");
           params.add(rqst.getPartitionname());
+        }
+
+        // This means even if we have several writeIds for the same table
+        // only one entry will be inserted in COMPACTION_QUEUE
+        if (rqst.getType().equals(CompactionType.CLEAN_ABORTED)) {
+          sb.append(" AND cq_type=").append(quoteChar(CLEAN_ABORTED));
         }
 
         pst = sqlGenerator.prepareStmtWithParameters(dbConn, sb.toString(), params);
@@ -3050,7 +3090,14 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         } else {
           buf.append("'");
         }
-        buf.append(INITIATED_STATE);
+        char state = INITIATED_STATE;
+        // We send the work directly to the cleaning stage because
+        // the worker doesn't have to do anything, we only have to delete
+        // files that may have been written.
+        if (rqst.getType().equals(CompactionType.CLEAN_ABORTED)) {
+          state = READY_FOR_CLEANING;
+        }
+        buf.append(state);
         buf.append("', '");
         switch (rqst.getType()) {
           case MAJOR:
@@ -3059,6 +3106,10 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
 
           case MINOR:
             buf.append(MINOR_TYPE);
+            break;
+
+          case CLEAN_ABORTED:
+            buf.append(CLEAN_ABORTED);
             break;
 
           default:
@@ -3144,6 +3195,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
           switch (rs.getString(5).charAt(0)) {
             case MAJOR_TYPE: e.setType(CompactionType.MAJOR); break;
             case MINOR_TYPE: e.setType(CompactionType.MINOR); break;
+            case CLEAN_ABORTED: e.setType(CompactionType.CLEAN_ABORTED); break;
             default:
               //do nothing to handle RU/D if we add another status
           }
@@ -3236,6 +3288,15 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         for(PreparedStatement pst : insertPreparedStmts) {
           modCount = pst.executeUpdate();
         }
+
+        // Delete from TXN_COMPONENTS the row indicating to scan all partition in
+        // case of failure because at this point partitions are added and we know
+        // what to scan.
+        PreparedStatement deletePreparedStmt = sqlGenerator.prepareStmtWithParameters(dbConn,
+            "delete from TXN_COMPONENTS where TC_TXNID=? and TC_OPERATION_TYPE=?",
+            Arrays.asList(Long.toString(rqst.getTxnid()), OperationType.ALL_PARTITIONS.toString()));
+        deletePreparedStmt.execute();
+
         LOG.debug("Going to commit");
         dbConn.commit();
       } catch (SQLException e) {
@@ -5236,6 +5297,8 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         return CompactionType.MAJOR;
       case MINOR_TYPE:
         return CompactionType.MINOR;
+      case CLEAN_ABORTED:
+        return CompactionType.CLEAN_ABORTED;
       default:
         LOG.warn("Unexpected compaction type " + dbValue);
         return null;
@@ -5247,6 +5310,8 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         return MAJOR_TYPE;
       case MINOR:
         return MINOR_TYPE;
+      case CLEAN_ABORTED:
+        return CLEAN_ABORTED;
       default:
         LOG.warn("Unexpected compaction type " + ct);
         return null;

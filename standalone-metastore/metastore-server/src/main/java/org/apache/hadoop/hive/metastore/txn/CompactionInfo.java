@@ -26,6 +26,8 @@ import org.apache.hadoop.hive.metastore.api.TableValidWriteIds;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.List;
+import java.util.Objects;
 
 /**
  * Information on a possible or running compaction.
@@ -63,6 +65,9 @@ public class CompactionInfo implements Comparable<CompactionInfo> {
   private String fullPartitionName = null;
   private String fullTableName = null;
 
+  // This is used for the compactions of type 'p'
+  public List<Long> writeIds;
+
   public CompactionInfo(String dbname, String tableName, String partName, CompactionType type) {
     this.dbname = dbname;
     this.tableName = tableName;
@@ -99,8 +104,17 @@ public class CompactionInfo implements Comparable<CompactionInfo> {
     }
     return fullTableName;
   }
+
+  public boolean isMinorCompaction() {
+    return CompactionType.MINOR == type;
+  }
+
   public boolean isMajorCompaction() {
     return CompactionType.MAJOR == type;
+  }
+
+  public boolean isCleanAbortedCompaction() {
+    return CompactionType.CLEAN_ABORTED == type;
   }
 
   @Override
@@ -117,13 +131,17 @@ public class CompactionInfo implements Comparable<CompactionInfo> {
       "properties:" + properties + "," +
       "runAs:" + runAs + "," +
       "tooManyAborts:" + tooManyAborts + "," +
-      "highestWriteId:" + highestWriteId;
+      "highestWriteId:" + highestWriteId + "," +
+      "writeIds:" + writeIds;
   }
 
   @Override
   public int hashCode() {
     int result = 17;
     result = 31 * result + this.getFullPartitionName().hashCode();
+    if (isCleanAbortedCompaction()) {
+      result += Objects.hash(type);
+    }
     return result;
   }
 
@@ -161,6 +179,7 @@ public class CompactionInfo implements Comparable<CompactionInfo> {
     fullCi.hadoopJobId = rs.getString(13);
     return fullCi;
   }
+
   static void insertIntoCompletedCompactions(PreparedStatement pStmt, CompactionInfo ci, long endTime) throws SQLException {
     pStmt.setLong(1, ci.id);
     pStmt.setString(2, ci.dbname);
@@ -201,6 +220,9 @@ public class CompactionInfo implements Comparable<CompactionInfo> {
     if (cr.isSetHighestWriteId()) {
       ci.highestWriteId = cr.getHighestWriteId();
     }
+    if (cr.isSetWriteIds()) {
+      ci.writeIds = cr.getWriteIds();
+    }
     return ci;
   }
 
@@ -217,6 +239,7 @@ public class CompactionInfo implements Comparable<CompactionInfo> {
     cr.setState(Character.toString(ci.state));
     cr.setWorkerId(ci.workerId);
     cr.setHighestWriteId(ci.highestWriteId);
+    cr.setWriteIds(ci.writeIds);
     return cr;
   }
 

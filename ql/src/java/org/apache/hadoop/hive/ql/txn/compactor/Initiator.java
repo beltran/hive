@@ -96,7 +96,7 @@ public class Initiator extends MetaStoreCompactorThread {
           LOG.debug("Found " + potentials.size() + " potential compactions, " +
               "checking to see if we should compact any of them");
           for (CompactionInfo ci : potentials) {
-            LOG.info("Checking to see if we should compact " + ci.getFullPartitionName());
+            LOG.info("Checking to see if we should compact " + ci.getFullPartitionName() + " with type " + ci.type);
             try {
               Table t = resolveTable(ci);
               if (t == null) {
@@ -114,7 +114,7 @@ public class Initiator extends MetaStoreCompactorThread {
 
               // Check to see if this is a table level request on a partitioned table.  If so,
               // then it's a dynamic partitioning case and we shouldn't check the table itself.
-              if (t.getPartitionKeys() != null && t.getPartitionKeys().size() > 0 &&
+              if (!ci.isCleanAbortedCompaction() && t.getPartitionKeys() != null && t.getPartitionKeys().size() > 0 &&
                   ci.partName  == null) {
                 LOG.debug("Skipping entry for " + ci.getFullTableName() + " as it is from dynamic" +
                     " partitioning");
@@ -140,7 +140,7 @@ public class Initiator extends MetaStoreCompactorThread {
 
               // Figure out who we should run the file operations as
               Partition p = resolvePartition(ci);
-              if (p == null && ci.partName != null) {
+              if (!ci.isCleanAbortedCompaction() && p == null && ci.partName != null) {
                 LOG.info("Can't find partition " + ci.getFullPartitionName() +
                     ", assuming it has been dropped and moving on.");
                 continue;
@@ -241,7 +241,11 @@ public class Initiator extends MetaStoreCompactorThread {
     if (ci.tooManyAborts) {
       LOG.debug("Found too many aborted transactions for " + ci.getFullPartitionName() + ", " +
           "initiating major compaction");
-      return CompactionType.MAJOR;
+      if (ci.isCleanAbortedCompaction()) {
+        return CompactionType.CLEAN_ABORTED;
+      } else {
+        return CompactionType.MAJOR;
+      }
     }
 
     if (runJobAsSelf(runAs)) {
@@ -269,6 +273,10 @@ public class Initiator extends MetaStoreCompactorThread {
   private CompactionType determineCompactionType(CompactionInfo ci, ValidWriteIdList writeIds,
                                                  StorageDescriptor sd, Map<String, String> tblproperties)
       throws IOException, InterruptedException {
+
+    if (ci.isCleanAbortedCompaction()) {
+      return CompactionType.CLEAN_ABORTED;
+    }
 
     boolean noBase = false;
     Path location = new Path(sd.getLocation());

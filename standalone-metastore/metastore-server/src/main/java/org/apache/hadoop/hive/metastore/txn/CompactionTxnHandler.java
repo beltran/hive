@@ -84,10 +84,10 @@ class CompactionTxnHandler extends TxnHandler {
         rs.close();
 
         // Check for aborted txns
-        s = "select tc_database, tc_table, tc_partition " +
+        s = "select tc_database, tc_table, tc_partition, tc_operation_type " +
           "from TXNS, TXN_COMPONENTS " +
           "where txn_id = tc_txnid and txn_state = '" + TXN_ABORTED + "' " +
-          "group by tc_database, tc_table, tc_partition " +
+          "group by tc_database, tc_table, tc_partition,tc_operation_type " +
           "having count(*) > " + maxAborted;
 
         LOG.debug("Going to execute query <" + s + ">");
@@ -97,6 +97,10 @@ class CompactionTxnHandler extends TxnHandler {
           info.dbname = rs.getString(1);
           info.tableName = rs.getString(2);
           info.partName = rs.getString(3);
+          CompactionType compactionType = dbCompactionType2ThriftType(rs.getString(4).charAt(0));
+          if (compactionType != null) {
+            info.type = compactionType;
+          }
           info.tooManyAborts = true;
           response.add(info);
         }
@@ -259,14 +263,32 @@ class CompactionTxnHandler extends TxnHandler {
           info.tableName = rs.getString(3);
           info.partName = rs.getString(4);
           switch (rs.getString(5).charAt(0)) {
-            case MAJOR_TYPE: info.type = CompactionType.MAJOR; break;
-            case MINOR_TYPE: info.type = CompactionType.MINOR; break;
-            default: throw new MetaException("Unexpected compaction type " + rs.getString(5));
+          case TxnHandler.MAJOR_TYPE: info.type = CompactionType.MAJOR; break;
+          case TxnHandler.MINOR_TYPE: info.type = CompactionType.MINOR; break;
+          case TxnHandler.CLEAN_ABORTED: info.type = CompactionType.CLEAN_ABORTED; break;
+          default: throw new MetaException("Unexpected compaction type " + rs.getString(5));
           }
           info.runAs = rs.getString(6);
           info.highestWriteId = rs.getLong(7);
           rc.add(info);
         }
+
+        for (CompactionInfo ci: rc) {
+          if (ci.type.equals(CompactionType.CLEAN_ABORTED)) {
+            String s2 = "select tc_writeid from TXN_COMPONENTS where tc_database=? AND tc_table=? AND tc_operation_type=?";
+            PreparedStatement pStmt = dbConn.prepareStatement(s2);
+            LOG.debug("Going to execute query <" + s2 + ">");
+            pStmt.setString(1, ci.dbname);
+            pStmt.setString(2, ci.tableName);
+            pStmt.setString(3, String.valueOf(OperationType.ALL_PARTITIONS.getSqlConst()));
+            ci.writeIds = new ArrayList<>();
+            rs = pStmt.executeQuery();
+            while(rs.next()) {
+              ci.writeIds.add(rs.getLong(1));
+            }
+          }
+        }
+
         LOG.debug("Going to rollback");
         dbConn.rollback();
         return rc;
@@ -354,8 +376,10 @@ class CompactionTxnHandler extends TxnHandler {
         pStmt = dbConn.prepareStatement("select CQ_ID, CQ_DATABASE, CQ_TABLE, CQ_PARTITION, CQ_STATE, CQ_TYPE, CQ_TBLPROPERTIES, CQ_WORKER_ID, CQ_START, CQ_RUN_AS, CQ_HIGHEST_WRITE_ID, CQ_META_INFO, CQ_HADOOP_JOB_ID from COMPACTION_QUEUE WHERE CQ_ID = ?");
         pStmt.setLong(1, info.id);
         rs = pStmt.executeQuery();
+        List<Long> writeIds = info.writeIds;
         if(rs.next()) {
           info = CompactionInfo.loadFullFromCompactionQueue(rs);
+          info.writeIds = writeIds;
         }
         else {
           throw new IllegalStateException("No record with CQ_ID=" + info.id + " found in COMPACTION_QUEUE");
@@ -399,8 +423,12 @@ class CompactionTxnHandler extends TxnHandler {
         }
         LOG.debug("Going to execute update <" + s + ">");
         if ((updCount = pStmt.executeUpdate()) < 1) {
-          LOG.error("Expected to remove at least one row from completed_txn_components when " +
-            "marking compaction entry as clean!");
+          // In the case of clean abort commit hasn't happened so completed_txn_components hasn't been filled
+          if (!info.isCleanAbortedCompaction()) {
+            LOG.error(
+                "Expected to remove at least one row from completed_txn_components when "
+                    + "marking compaction entry as clean!");
+          }
         }
         /**
          * compaction may remove data from aborted txns above tc_writeid bit it only guarantees to
@@ -412,6 +440,13 @@ class CompactionTxnHandler extends TxnHandler {
           TXN_ABORTED + "' and tc_database = ? and tc_table = ?";
         if (info.highestWriteId != 0) s += " and tc_writeid <= ?";
         if (info.partName != null) s += " and tc_partition = ?";
+        if (info.writeIds != null && info.writeIds.size() > 0) {
+          String[] wriStr = new String[info.writeIds.size()];
+          for (int i = 0; i < info.writeIds.size(); i++) {
+            wriStr[i] = info.writeIds.get(i).toString();
+          }
+          s += " and tc_writeid in (" + String.join(",", wriStr) + ")";
+        }
 
         pStmt = dbConn.prepareStatement(s);
         paramCount = 1;
@@ -448,6 +483,13 @@ class CompactionTxnHandler extends TxnHandler {
           suffix.append(" and tc_table = ?");
           if (info.partName != null) {
             suffix.append(" and tc_partition = ?");
+          }
+          if (info.writeIds != null && info.writeIds.size() > 0) {
+            String[] wriStr = new String[info.writeIds.size()];
+            for (int i = 0; i < info.writeIds.size(); i++) {
+              wriStr[i] = info.writeIds.get(i).toString();
+            }
+            suffix.append(" and tc_writeid in (").append(String.join(",", wriStr)).append(")");
           }
 
           // Populate the complete query with provided prefix and suffix

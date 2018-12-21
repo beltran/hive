@@ -176,6 +176,7 @@ enum LockType {
 enum CompactionType {
     MINOR = 1,
     MAJOR = 2,
+    CLEAN_ABORTED = 3,
 }
 
 enum GrantRevokeType {
@@ -976,6 +977,7 @@ struct AllocateTableWriteIdsRequest {
     4: optional string replPolicy,
     // The list is assumed to be sorted by both txnids and write ids. The write id list is assumed to be contiguous.
     5: optional list<TxnToWriteId> srcTxnToWriteIdList,
+    6: optional bool dynamicPartitions,
 }
 
 // Map for allocated write id against the txn for which it is allocated
@@ -1093,6 +1095,7 @@ struct CompactionInfoStruct {
     10: optional string workerId
     11: optional i64 start
     12: optional i64 highestWriteId
+    13: optional list<i64> writeIds
 }
 
 struct CompactionResponse {

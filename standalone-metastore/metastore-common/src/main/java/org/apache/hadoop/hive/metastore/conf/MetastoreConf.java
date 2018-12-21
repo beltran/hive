@@ -400,6 +400,15 @@ public class MetastoreConf {
             "tables or partitions to be compacted once they are determined to need compaction.\n" +
             "It will also increase the background load on the Hadoop cluster as more MapReduce jobs\n" +
             "will be running in the background."),
+    COMPACTOR_CORE_CLEANER_THREADS("metastore.compactor.cleaner.core.threads",
+        "hive.metastore.compactor.cleaner.threads", 2,
+        "Determines together with hive.metastore.compactor.max.threads how many cleaner threads"
+            + " will do clean related work. A way to know if more threads are need"
+            + " is to check the rows in table COMPACTION_QUEUE with cq_state='r' (ready for cleaning)."
+            + " If too many of these rows start to queue up a higher number is needed."),
+    COMPACTOR_MAX_CLEANER_THREADS("metastore.compactor.cleaner.max.threads",
+        "hive.metastore.compactor.max.threads", 4,
+        "Max threads that will be running for cleaning tasks"),
     COMPACTOR_MINOR_STATS_COMPRESSION(
         "metastore.compactor.enable.stats.compression",
         "metastore.compactor.enable.stats.compression", true,

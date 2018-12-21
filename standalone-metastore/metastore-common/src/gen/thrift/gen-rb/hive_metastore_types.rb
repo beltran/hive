@@ -68,8 +68,9 @@ end
 module CompactionType
   MINOR = 1
   MAJOR = 2
-  VALUE_MAP = {1 => "MINOR", 2 => "MAJOR"}
-  VALID_VALUES = Set.new([MINOR, MAJOR]).freeze
+  CLEAN_ABORTED = 3
+  VALUE_MAP = {1 => "MINOR", 2 => "MAJOR", 3 => "CLEAN_ABORTED"}
+  VALID_VALUES = Set.new([MINOR, MAJOR, CLEAN_ABORTED]).freeze
 end
 
 module GrantRevokeType
@@ -2890,13 +2891,15 @@ class AllocateTableWriteIdsRequest
   TXNIDS = 3
   REPLPOLICY = 4
   SRCTXNTOWRITEIDLIST = 5
+  DYNAMICPARTITIONS = 6
 
   FIELDS = {
     DBNAME => {:type => ::Thrift::Types::STRING, :name => 'dbName'},
     TABLENAME => {:type => ::Thrift::Types::STRING, :name => 'tableName'},
     TXNIDS => {:type => ::Thrift::Types::LIST, :name => 'txnIds', :element => {:type => ::Thrift::Types::I64}, :optional => true},
     REPLPOLICY => {:type => ::Thrift::Types::STRING, :name => 'replPolicy', :optional => true},
-    SRCTXNTOWRITEIDLIST => {:type => ::Thrift::Types::LIST, :name => 'srcTxnToWriteIdList', :element => {:type => ::Thrift::Types::STRUCT, :class => ::TxnToWriteId}, :optional => true}
+    SRCTXNTOWRITEIDLIST => {:type => ::Thrift::Types::LIST, :name => 'srcTxnToWriteIdList', :element => {:type => ::Thrift::Types::STRUCT, :class => ::TxnToWriteId}, :optional => true},
+    DYNAMICPARTITIONS => {:type => ::Thrift::Types::BOOL, :name => 'dynamicPartitions', :optional => true}
   }
 
   def struct_fields; FIELDS; end
@@ -3293,6 +3296,7 @@ class CompactionInfoStruct
   WORKERID = 10
   START = 11
   HIGHESTWRITEID = 12
+  WRITEIDS = 13
 
   FIELDS = {
     ID => {:type => ::Thrift::Types::I64, :name => 'id'},
@@ -3306,7 +3310,8 @@ class CompactionInfoStruct
     STATE => {:type => ::Thrift::Types::STRING, :name => 'state', :optional => true},
     WORKERID => {:type => ::Thrift::Types::STRING, :name => 'workerId', :optional => true},
     START => {:type => ::Thrift::Types::I64, :name => 'start', :optional => true},
-    HIGHESTWRITEID => {:type => ::Thrift::Types::I64, :name => 'highestWriteId', :optional => true}
+    HIGHESTWRITEID => {:type => ::Thrift::Types::I64, :name => 'highestWriteId', :optional => true},
+    WRITEIDS => {:type => ::Thrift::Types::LIST, :name => 'writeIds', :element => {:type => ::Thrift::Types::I64}, :optional => true}
   }
 
   def struct_fields; FIELDS; end

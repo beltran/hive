@@ -207,7 +207,7 @@ public class TransactionBatch extends AbstractStreamingTransaction {
 
   private List<TxnToWriteId> allocateWriteIdsImpl(final List<Long> txnIds) throws TException {
     return conn.getMSC().allocateTableWriteIdsBatch(txnIds, conn.getDatabase(),
-        conn.getTable().getTableName());
+        conn.getTable().getTableName(), conn.isDynamicPartitioning());
   }
 
   @Override
